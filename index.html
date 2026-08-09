@@ -13,9 +13,7 @@
     --bg:#F7F8F6; --panel:#FFFFFF; --ink:#1E241F; --ink-soft:#5B655D; --line:#DDE2DC;
     --veg:#3B6D11; --dry:#854F0B; --pro:#993C1D; --dai:#0C447C; --bre:#712B13; --pas:#72243E;
   }
-  @media (prefers-color-scheme: dark){
-    :root{ --bg:#181C19; --panel:#20251F; --ink:#EDEFE9; --ink-soft:#9CA69D; --line:#333B33; }
-  }
+  /* Board always uses the light palette below, regardless of device dark-mode setting */
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   body,html{margin:0;padding:0;background:var(--bg)}
   .board-root{font-family:'Space Grotesk',sans-serif;color:var(--ink);max-width:1100px;margin:0 auto;padding:0.9rem 12px 2rem;font-size:15px}
@@ -125,7 +123,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, doc, onSnapshot, setDoc, deleteField, arrayUnion,
+  getFirestore, doc, getDoc, onSnapshot, updateDoc, setDoc, deleteField, arrayUnion,
   collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -164,6 +162,16 @@ document.getElementById('display-name').value = displayName;
 updateAdminBtn();
 renderChips();
 
+// Make sure the shared board document exists before anyone writes to it
+(async () => {
+  try {
+    const snap = await getDoc(stateRef);
+    if (!snap.exists()){
+      await setDoc(stateRef, { requests: {}, customItems: [] });
+    }
+  } catch(e){ console.error('Init error', e); }
+})();
+
 // Live sync: every connected device gets pushed updates instantly
 onSnapshot(stateRef, (snap) => {
   const data = snap.data() || {};
@@ -193,11 +201,11 @@ function setQty(id, delta){
   const field = 'requests.' + id;
   if (next === 0){
     delete requests[id];
-    setDoc(stateRef, { [field]: deleteField() }, { merge: true }).catch(console.error);
+    updateDoc(stateRef, { [field]: deleteField() }).catch(console.error);
   } else {
     const val = { qty: next, unit: 'kg', requestedBy: displayName || 'Unnamed', updatedAt: Date.now() };
     requests[id] = val;
-    setDoc(stateRef, { [field]: val }, { merge: true }).catch(console.error);
+    updateDoc(stateRef, { [field]: val }).catch(console.error);
   }
   render();
 }
@@ -208,7 +216,7 @@ function addCustomItem(category, name){
   const id = 'custom-'+slug(category)+'-'+slug(name)+'-'+Date.now().toString(36);
   const item = { id, name, category };
   customItems.push(item);
-  setDoc(stateRef, { customItems: arrayUnion(item) }, { merge: true }).catch(console.error);
+  updateDoc(stateRef, { customItems: arrayUnion(item) }).catch(console.error);
   render();
 }
 
@@ -242,7 +250,7 @@ async function sendOrder(){
   };
   try{
     await addDoc(ordersColl, entry);
-    await setDoc(stateRef, { requests: {} }, { merge: true });
+    await updateDoc(stateRef, { requests: {} });
     closeModal();
   } catch(e){ console.error(e); alert('Could not send order — check your connection.'); }
 }
