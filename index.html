@@ -11,8 +11,8 @@
 <style>
   :root{
     --bg:#F2F4F0; --panel:#FFFFFF; --ink:#12190F; --ink-soft:#495449; --line:#C6D0C4;
-    --veg:#2E5C0C; --veg-bg:#DEEECB; --dry:#7A4B08; --dry-bg:#F5E4C4; --pro:#8A2E12; --pro-bg:#F5DCD1;
-    --dai:#0A3F72; --dai-bg:#D7E7F8; --bre:#5E2308; --bre-bg:#E9C3AE; --pas:#651C38; --pas-bg:#F5D8E2;
+    --veg:#2E5C0C; --veg-bg:#D7EEC0; --dry:#8A6A00; --dry-bg:#FBEA8E; --pro:#9C2B12; --pro-bg:#F6C7BB;
+    --dai:#0A3F72; --dai-bg:#CCE2F6; --bre:#5E3411; --bre-bg:#E3C8A0; --pas:#7A1F44; --pas-bg:#F6D1E2;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   body,html{margin:0;padding:0;background:var(--bg)}
@@ -28,11 +28,12 @@
   input[type=text]::placeholder{color:var(--ink-soft);font-weight:400}
   .row2{display:flex;gap:8px;flex:1 1 100%;order:2;align-items:center;flex-wrap:wrap}
   .name-field{flex:1;min-width:100px}
-  .name-field input{width:100%;font-size:13px;padding:8px 10px;padding-left:10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif;font-weight:500}
+  .name-field input{width:100%;font-size:13px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif;font-weight:500}
   .name-field.needs-name input{border-color:var(--pro)}
   .icon-btn{font-size:12px;font-weight:600;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:4px}
   .icon-btn:hover{border-color:var(--ink)}
   .icon-btn.admin-on{color:#fff;background:var(--dai);border-color:var(--dai)}
+  .sq-btn{width:32px;height:32px;flex-shrink:0;padding:0;justify-content:center;font-size:15px}
   .jumpchips{display:flex;gap:6px;overflow-x:auto;padding:0 2px 10px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .jumpchips::-webkit-scrollbar{display:none}
   .chip{flex:0 0 auto;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer;white-space:nowrap}
@@ -44,13 +45,22 @@
   .chip.pro.active{background:var(--pro);border-color:var(--pro)} .chip.dai.active{background:var(--dai);border-color:var(--dai)}
   .chip.bre.active{background:var(--bre);border-color:var(--bre)} .chip.pas.active{background:var(--pas);border-color:var(--pas)}
   .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-  .col{flex:0 0 88vw;scroll-snap-align:start;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column}
-  .col-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px 2px;border-bottom:1.5px solid var(--line);margin-bottom:8px}
+  .col{flex:0 0 88vw;scroll-snap-align:start;border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;background:var(--panel)}
+  .col.veg{background:var(--veg-bg);border-color:var(--veg)} .col.veg .col-title{color:var(--veg)}
+  .col.dry{background:var(--dry-bg);border-color:var(--dry)} .col.dry .col-title{color:var(--dry)}
+  .col.pro{background:var(--pro-bg);border-color:var(--pro)} .col.pro .col-title{color:var(--pro)}
+  .col.dai{background:var(--dai-bg);border-color:var(--dai)} .col.dai .col-title{color:var(--dai)}
+  .col.bre{background:var(--bre-bg);border-color:var(--bre)} .col.bre .col-title{color:var(--bre)}
+  .col.pas{background:var(--pas-bg);border-color:var(--pas)} .col.pas .col-title{color:var(--pas)}
+  .col-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px 2px;border-bottom:1.5px solid rgba(0,0,0,0.12);margin-bottom:8px}
   .col-title{font-size:15px;font-weight:700}
-  .col-count{font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);background:var(--bg);border-radius:20px;padding:3px 9px}
+  .col-count{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--ink);background:rgba(255,255,255,0.6);border-radius:20px;padding:3px 9px}
   .items{display:flex;flex-direction:column;gap:7px}
-  .item{border:1.5px solid var(--line);border-left:5px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--panel)}
-  .item.active{background:var(--bg)}
+  .item{border:1.5px solid rgba(0,0,0,0.14);border-left:5px solid rgba(0,0,0,0.14);border-radius:9px;padding:9px 11px;background:var(--panel)}
+  .col.veg .item.active{border-left-color:var(--veg)} .col.dry .item.active{border-left-color:var(--dry)}
+  .col.pro .item.active{border-left-color:var(--pro)} .col.dai .item.active{border-left-color:var(--dai)}
+  .col.bre .item.active{border-left-color:var(--bre)} .col.pas .item.active{border-left-color:var(--pas)}
+  .item.active{box-shadow:0 1px 3px rgba(0,0,0,0.08)}
   .item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .item-name{font-size:14px;font-weight:600;line-height:1.35}
   .item-del{background:none;border:none;color:var(--pro);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0}
@@ -62,28 +72,24 @@
   .item-comment{margin-top:7px}
   .item-comment input{width:100%;font-size:12px;font-weight:400;padding:7px 9px;border:1.5px dashed var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif}
   .item-row-top{display:flex;align-items:flex-start;gap:6px}
-  .add-item-btn{margin-top:9px;font-size:13px;font-weight:600;color:var(--ink-soft);background:none;border:1.5px dashed var(--line);border-radius:9px;padding:10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:center}
+  .add-item-btn{margin-top:9px;font-size:13px;font-weight:600;color:var(--ink-soft);background:rgba(255,255,255,0.5);border:1.5px dashed rgba(0,0,0,0.2);border-radius:9px;padding:10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:center}
   .add-form{display:flex;gap:6px;margin-top:9px}
   .add-form input{flex:1;font-size:13px;padding:9px}
   .add-form button{font-size:13px;font-weight:600;padding:9px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--ink);color:var(--panel);cursor:pointer;font-family:'Space Grotesk',sans-serif}
   .empty-state{font-size:12px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px 4px}
   .no-results,.loading{font-size:13px;font-weight:500;color:var(--ink-soft);padding:24px;text-align:center}
-  .veg{border-left-color:var(--veg)} .veg .col-count{color:var(--veg)}
-  .dry{border-left-color:var(--dry)} .dry .col-count{color:var(--dry)}
-  .pro{border-left-color:var(--pro)} .pro .col-count{color:var(--pro)}
-  .dai{border-left-color:var(--dai)} .dai .col-count{color:var(--dai)}
-  .bre{border-left-color:var(--bre)} .bre .col-count{color:var(--bre)}
-  .pas{border-left-color:var(--pas)} .pas .col-count{color:var(--pas)}
 
   .overlay{position:fixed;inset:0;background:rgba(10,15,10,0.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
-  .sheet{background:var(--panel);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px}
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:-16px;background:var(--panel);padding-top:4px;z-index:2}
-  .sheet-title{font-size:17px;font-weight:700}
-  .sheet-close{background:none;border:none;font-size:22px;color:var(--ink-soft);cursor:pointer;padding:4px}
-  .sum-cat-head{font-size:13px;font-weight:700;margin:14px 2px 8px;padding-bottom:4px;border-bottom:2px solid var(--line)}
+  .sheet{background:var(--panel);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px;transition:none}
+  .sheet.fullscreen{max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0}
+  .sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;position:sticky;top:-16px;background:var(--panel);padding-top:4px;z-index:2}
+  .sheet-title{font-size:17px;font-weight:700;flex:1}
+  .sheet-close,.sheet-back,.sheet-fs{background:none;border:1.5px solid var(--line);border-radius:8px;font-size:16px;color:var(--ink);cursor:pointer;padding:6px 9px;display:flex;align-items:center}
+  .sheet-close{border:none;font-size:22px;color:var(--ink-soft);padding:2px 6px}
+  .sum-cat-head{font-size:13px;font-weight:700;margin:14px 0 8px;padding:7px 10px;border-radius:7px}
   .sum-cat-head:first-child{margin-top:0}
-  .sum-row{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-left:5px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px;background:var(--bg)}
-  .sum-row.checked{opacity:0.5}
+  .sum-row{display:flex;align-items:center;gap:10px;border:1.5px solid rgba(0,0,0,0.12);border-left:5px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px}
+  .sum-row.checked{opacity:0.55}
   .sum-row.checked .sum-name{text-decoration:line-through}
   .sum-check{flex-shrink:0;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink)}
   .sum-check.on{background:var(--veg);border-color:var(--veg);color:#fff}
@@ -96,15 +102,11 @@
   .sum-total{font-size:12px;font-weight:600;color:var(--ink-soft);margin:4px 2px 12px}
   .send-btn{width:100%;padding:13px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;margin-top:8px}
   .send-btn:disabled{opacity:0.4;cursor:not-allowed}
-  .hist-entry{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-  .hist-entry-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
-  .hist-date{font-size:13px;font-weight:700}
-  .hist-meta{font-size:11px;font-weight:600;color:var(--ink-soft)}
-  .hist-items{margin-top:8px;padding-top:8px;border-top:1.5px solid var(--line);font-size:12px;display:none}
-  .hist-items.open{display:block}
-  .hist-line{display:flex;justify-content:space-between;padding:3px 0;color:var(--ink-soft);font-weight:500}
-  .hist-line .hn{color:var(--ink);font-weight:600}
-  .hist-empty,.sum-empty{font-size:13px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px}
+  .hist-list-row{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--line);border-radius:10px;padding:12px 13px;margin-bottom:8px;cursor:pointer;background:var(--panel)}
+  .hist-list-row:hover{border-color:var(--ink)}
+  .hist-date{font-size:14px;font-weight:700}
+  .hist-meta{font-size:11px;font-weight:600;color:var(--ink-soft);margin-top:2px}
+  .hist-empty{font-size:13px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px}
 
   @media (min-width:720px){
     .board-root{font-size:14px}
@@ -128,7 +130,7 @@
     <div class="row2">
       <div class="name-field" id="name-field"><input type="text" id="display-name" placeholder="Your name (required to order)" autocomplete="off"></div>
       <button class="icon-btn" id="history-btn" type="button"><i class="ti ti-history"></i>History</button>
-      <button class="icon-btn" id="summary-btn" type="button" style="display:none"><i class="ti ti-clipboard-list"></i>Summary</button>
+      <button class="icon-btn" id="summary-btn" type="button"><i class="ti ti-clipboard-list"></i>Summary</button>
       <button class="icon-btn" id="admin-btn" type="button"><i class="ti ti-lock"></i>Admin</button>
     </div>
   </div>
@@ -173,9 +175,14 @@ let displayName = localStorage.getItem('kb-display-name') || '';
 let isAdmin = localStorage.getItem('kb-is-admin') === 'true';
 let searchTerm = '';
 let summaryFilter = 'All';
-let histFilter = 'All';
-let histTerm = '';
 let commentTimers = {};
+let modalFullscreen = false;
+
+// history state
+let historyCache = [];
+let histOpenIdx = null;   // null = list view, otherwise index into historyCache
+let histDetailFilter = 'All';
+let histDetailTerm = '';
 
 document.getElementById('display-name').value = displayName;
 updateAdminBtn();
@@ -283,7 +290,6 @@ function updateAdminBtn(){
   const btn = document.getElementById('admin-btn');
   btn.classList.toggle('admin-on', isAdmin);
   btn.innerHTML = isAdmin ? '<i class="ti ti-lock-open"></i>Admin' : '<i class="ti ti-lock"></i>Admin';
-  document.getElementById('summary-btn').style.display = isAdmin ? 'flex' : 'none';
 }
 function handleAdminClick(){
   if (isAdmin){
@@ -297,6 +303,7 @@ function handleAdminClick(){
 }
 
 async function sendOrder(){
+  if (!isAdmin){ alert('Only admins can mark an order as sent.'); return; }
   const activeIds = Object.keys(requests);
   if (activeIds.length === 0){ alert('The board has no requested items yet.'); return; }
   if (!confirm('Mark this order as sent? It will be saved to history and the board cleared for everyone.')) return;
@@ -385,13 +392,27 @@ function render(){
 }
 
 function openModal(html){
-  document.getElementById('modal-root').innerHTML = '<div class="overlay" id="overlay"><div class="sheet">' + html + '</div></div>';
+  modalFullscreen = false;
+  document.getElementById('modal-root').innerHTML = '<div class="overlay" id="overlay"><div class="sheet" id="sheet">' + html + '</div></div>';
   document.getElementById('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeModal(); });
 }
-function closeModal(){ document.getElementById('modal-root').innerHTML = ''; }
+function closeModal(){ document.getElementById('modal-root').innerHTML = ''; modalFullscreen = false; }
 window.closeModal = closeModal;
 
-// ---- Admin: order summary, grouped by category, with tick-off checklist ----
+function fsToggleHtml(){
+  return '<button class="sheet-fs" id="fs-toggle" type="button" title="Toggle full screen"><i class="ti ti-'+(modalFullscreen?'arrows-minimize':'arrows-maximize')+'"></i></button>';
+}
+function bindFsToggle(onToggle){
+  const btn = document.getElementById('fs-toggle');
+  if (!btn) return;
+  btn.onclick = () => {
+    modalFullscreen = !modalFullscreen;
+    document.getElementById('sheet').classList.toggle('fullscreen', modalFullscreen);
+    onToggle();
+  };
+}
+
+// ---- Order summary: open to everyone, grouped by category, tick-off checklist, fullscreen ----
 function renderSummary(){
   const itemsById = {}; for (const it of buildItemList()) itemsById[it.id] = it;
   const all = Object.keys(requests).map(id => ({ id, ...itemsById[id], ...requests[id] })).filter(r => r.name);
@@ -409,24 +430,26 @@ function renderSummary(){
     for (const cat of Object.keys(CATALOG)){
       const inCat = filtered.filter(r => r.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
       if (inCat.length === 0) continue;
-      rowsHtml += '<div class="sum-cat-head" style="color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
-      rowsHtml += inCat.map(sumRowHtml).join('');
+      rowsHtml += '<div class="sum-cat-head" style="background:var(--'+CAT_CLASS[cat]+'-bg);color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
+      rowsHtml += inCat.map(r => sumRowHtml(r)).join('');
     }
   } else {
-    rowsHtml = filtered.sort((a,b)=>a.name.localeCompare(b.name)).map(sumRowHtml).join('');
+    rowsHtml = filtered.sort((a,b)=>a.name.localeCompare(b.name)).map(r => sumRowHtml(r)).join('');
   }
 
   const checkedCount = filtered.filter(r => checkedOrder[r.id]).length;
   const html =
-    '<div class="sheet-head"><span class="sheet-title">Order summary</span><button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="sheet-head"><span class="sheet-title">Order summary</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="jumpchips" id="sum-chips" style="padding-bottom:10px">' + chips + '</div>' +
     '<div class="sum-total">'+checkedCount+' of '+filtered.length+' ticked off'+(summaryFilter!=='All' ? ' in '+summaryFilter : ' total')+'</div>' +
     '<div id="sum-rows">' + rowsHtml + '</div>' +
-    '<button class="send-btn" id="send-order-btn" '+(all.length===0?'disabled':'')+'><i class="ti ti-send" style="vertical-align:-2px;margin-right:5px"></i>Mark sent &amp; clear board</button>';
-  openModal(html);
+    (isAdmin ? '<button class="send-btn" id="send-order-btn" '+(all.length===0?'disabled':'')+'><i class="ti ti-send" style="vertical-align:-2px;margin-right:5px"></i>Mark sent &amp; clear board</button>' : '');
+  openPreservingFullscreen(html);
   document.querySelectorAll('#sum-chips .chip').forEach(chip => { chip.onclick = () => { summaryFilter = chip.dataset.filter; renderSummary(); }; });
   document.querySelectorAll('.sum-check').forEach(chk => { chk.onclick = () => { toggleChecked(chk.dataset.id); renderSummary(); }; });
-  document.getElementById('send-order-btn').onclick = sendOrder;
+  bindFsToggle(renderSummary);
+  const sendBtn = document.getElementById('send-order-btn');
+  if (sendBtn) sendBtn.onclick = sendOrder;
 }
 function sumRowHtml(r){
   const on = !!checkedOrder[r.id];
@@ -437,54 +460,92 @@ function sumRowHtml(r){
     '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div></div>';
 }
 
-// ---- History: colored category filters + search ----
-let historyCache = [];
+// keep the same overlay/sheet element alive across a re-render so fullscreen state doesn't flicker
+function openPreservingFullscreen(html){
+  const existingSheet = document.getElementById('sheet');
+  if (existingSheet){
+    existingSheet.innerHTML = html;
+    existingSheet.classList.toggle('fullscreen', modalFullscreen);
+  } else {
+    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="overlay"><div class="sheet'+(modalFullscreen?' fullscreen':'')+'" id="sheet">' + html + '</div></div>';
+    document.getElementById('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeModal(); });
+  }
+}
+
+// ---- History: list of stored orders; click one to open a dedicated colored, grouped, searchable view ----
 async function openHistory(){
-  openModal(historyShell('<div class="loading">Loading…</div>'));
+  histOpenIdx = null;
+  openModal('<div class="loading">Loading…</div>');
   try{
     const q = query(ordersColl, orderBy('clearedAt', 'desc'), limit(20));
     const snap = await getDocs(q);
     historyCache = [];
     snap.forEach(d => historyCache.push(d.data()));
-    renderHistory();
-  } catch(e){ console.error(e); openModal(historyShell('<div class="hist-empty">Could not load history.</div>')); }
+    renderHistoryList();
+  } catch(e){ console.error(e); openPreservingFullscreen('<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div><div class="hist-empty">Could not load history.</div>'); }
 }
-function historyShell(inner){
-  const chips = ['All', ...Object.keys(CATALOG)].map(c =>
-    '<button type="button" class="chip '+(c!=='All'?CAT_CLASS[c]:'')+' '+(histFilter===c?'active':'')+'" data-hfilter="'+escapeHtml(c)+'">'+c+'</button>'
-  ).join('');
-  return '<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
-    '<div class="search-wrap" style="margin-bottom:10px"><i class="ti ti-search"></i><input type="text" id="hist-search" placeholder="Search past items" value="'+escapeHtml(histTerm)+'"/></div>' +
-    '<div class="jumpchips" id="hist-chips" style="padding-bottom:10px">' + chips + '</div>' +
-    '<div id="hist-body">' + inner + '</div>';
-}
-function renderHistory(){
-  const term = histTerm.trim().toLowerCase();
-  const rows = [];
-  let idx = 0;
-  for (const h of historyCache){
-    let its = h.items || [];
-    if (histFilter !== 'All') its = its.filter(it => it.category === histFilter);
-    if (term) its = its.filter(it => it.name.toLowerCase().includes(term));
-    if (its.length === 0) continue;
+function renderHistoryList(){
+  const rows = historyCache.length === 0 ? '<div class="hist-empty">No past orders yet.</div>' : historyCache.map((h, idx) => {
     const date = new Date(h.clearedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    const itemsHtml = its.map(it => '<div class="hist-line"><span class="hn">'+escapeHtml(it.name)+'</span><span>'+it.qty+' kg &middot; '+escapeHtml(it.requestedBy)+'</span></div>').join('');
-    rows.push('<div class="hist-entry"><div class="hist-entry-head" data-idx="'+idx+'"><span class="hist-date">'+date+'</span><span class="hist-meta">'+its.length+' items &middot; sent by '+escapeHtml(h.clearedBy)+'</span></div><div class="hist-items open" id="hist-'+idx+'">'+itemsHtml+'</div></div>');
-    idx++;
+    return '<div class="hist-list-row" data-idx="'+idx+'"><div><div class="hist-date">'+date+'</div><div class="hist-meta">'+(h.items||[]).length+' items &middot; sent by '+escapeHtml(h.clearedBy)+'</div></div><i class="ti ti-chevron-right"></i></div>';
+  }).join('');
+  const html = '<div class="sheet-head"><span class="sheet-title">Order history</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' + rows;
+  openPreservingFullscreen(html);
+  bindFsToggle(renderHistoryList);
+  document.querySelectorAll('.hist-list-row').forEach(row => { row.onclick = () => { histOpenIdx = Number(row.dataset.idx); histDetailFilter = 'All'; histDetailTerm = ''; renderHistoryDetail(); }; });
+}
+function renderHistoryDetail(){
+  const h = historyCache[histOpenIdx];
+  const date = new Date(h.clearedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const term = histDetailTerm.trim().toLowerCase();
+  let items = h.items || [];
+  if (histDetailFilter !== 'All') items = items.filter(it => it.category === histDetailFilter);
+  if (term) items = items.filter(it => it.name.toLowerCase().includes(term));
+
+  const chips = ['All', ...Object.keys(CATALOG)].map(c =>
+    '<button type="button" class="chip '+(c!=='All'?CAT_CLASS[c]:'')+' '+(histDetailFilter===c?'active':'')+'" data-hfilter="'+escapeHtml(c)+'">'+c+'</button>'
+  ).join('');
+
+  let rowsHtml;
+  if (items.length === 0){
+    rowsHtml = '<div class="hist-empty">No matching items.</div>';
+  } else if (histDetailFilter === 'All'){
+    rowsHtml = '';
+    for (const cat of Object.keys(CATALOG)){
+      const inCat = items.filter(it => it.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
+      if (inCat.length === 0) continue;
+      rowsHtml += '<div class="sum-cat-head" style="background:var(--'+CAT_CLASS[cat]+'-bg);color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
+      rowsHtml += inCat.map(histRowHtml).join('');
+    }
+  } else {
+    rowsHtml = items.sort((a,b)=>a.name.localeCompare(b.name)).map(histRowHtml).join('');
   }
-  const inner = rows.length === 0 ? '<div class="hist-empty">No matching orders.</div>' : rows.join('');
-  document.getElementById('hist-body').innerHTML = inner;
-  document.querySelectorAll('.hist-entry-head').forEach(h => { h.onclick = () => document.getElementById('hist-'+h.dataset.idx).classList.toggle('open'); });
-  document.querySelectorAll('#hist-chips .chip').forEach(chip => { chip.onclick = () => { histFilter = chip.dataset.hfilter; document.querySelectorAll('#hist-chips .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); renderHistory(); }; });
-  const s = document.getElementById('hist-search');
-  if (s) s.oninput = (e) => { histTerm = e.target.value; renderHistory(); };
+
+  const html =
+    '<div class="sheet-head"><button class="sheet-back" id="hist-back" type="button"><i class="ti ti-arrow-left"></i></button><span class="sheet-title">'+date+'</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="hist-meta" style="margin-bottom:10px">Sent by '+escapeHtml(h.clearedBy)+' &middot; '+(h.items||[]).length+' items total</div>' +
+    '<div class="search-wrap" style="margin-bottom:10px"><i class="ti ti-search"></i><input type="text" id="hist-detail-search" placeholder="Search items in this order" value="'+escapeHtml(histDetailTerm)+'"/></div>' +
+    '<div class="jumpchips" id="hist-detail-chips" style="padding-bottom:10px">' + chips + '</div>' +
+    '<div id="hist-detail-rows">' + rowsHtml + '</div>';
+  openPreservingFullscreen(html);
+  bindFsToggle(renderHistoryDetail);
+  document.getElementById('hist-back').onclick = () => { histOpenIdx = null; renderHistoryList(); };
+  document.querySelectorAll('#hist-detail-chips .chip').forEach(chip => { chip.onclick = () => { histDetailFilter = chip.dataset.hfilter; renderHistoryDetail(); }; });
+  const s = document.getElementById('hist-detail-search');
+  if (s){ s.oninput = (e) => { histDetailTerm = e.target.value; renderHistoryDetail(); }; s.focus(); s.selectionStart = s.selectionEnd = s.value.length; }
+}
+function histRowHtml(it){
+  return '<div class="sum-row" style="border-left-color:var(--'+CAT_CLASS[it.category]+')">' +
+    '<div class="sum-body"><span class="sum-name">'+escapeHtml(it.name)+'</span><span class="sum-cat">'+escapeHtml(it.category)+'</span>' +
+    (it.comment ? '<div class="sum-comment">"'+escapeHtml(it.comment)+'"</div>' : '') + '</div>' +
+    '<div class="sum-right">'+it.qty+' kg<span class="sum-by">'+escapeHtml(it.requestedBy)+'</span></div></div>';
 }
 
 document.getElementById('search').addEventListener('input', (e) => { searchTerm = e.target.value; render(); });
 document.getElementById('display-name').addEventListener('change', (e) => saveName(e.target.value));
 document.getElementById('admin-btn').addEventListener('click', handleAdminClick);
 document.getElementById('history-btn').addEventListener('click', openHistory);
-document.getElementById('summary-btn').addEventListener('click', renderSummary);
+document.getElementById('summary-btn').addEventListener('click', () => { summaryFilter = 'All'; renderSummary(); });
 </script>
 </body>
 </html>
