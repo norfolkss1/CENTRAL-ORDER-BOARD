@@ -6,59 +6,68 @@
 <title>Kitchen order board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
   :root{
-    --bg:#F7F8F6; --panel:#FFFFFF; --ink:#1E241F; --ink-soft:#5B655D; --line:#DDE2DC;
-    --veg:#3B6D11; --dry:#854F0B; --pro:#993C1D; --dai:#0C447C; --bre:#712B13; --pas:#72243E;
+    --bg:#F2F4F0; --panel:#FFFFFF; --ink:#12190F; --ink-soft:#495449; --line:#C6D0C4;
+    --veg:#2E5C0C; --veg-bg:#DEEECB; --dry:#7A4B08; --dry-bg:#F5E4C4; --pro:#8A2E12; --pro-bg:#F5DCD1;
+    --dai:#0A3F72; --dai-bg:#D7E7F8; --bre:#5E2308; --bre-bg:#E9C3AE; --pas:#651C38; --pas-bg:#F5D8E2;
   }
-  /* Board always uses the light palette below, regardless of device dark-mode setting */
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   body,html{margin:0;padding:0;background:var(--bg)}
   .board-root{font-family:'Space Grotesk',sans-serif;color:var(--ink);max-width:1100px;margin:0 auto;padding:0.9rem 12px 2rem;font-size:15px}
-  .status-bar{font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:5px;padding:0 2px 8px}
-  .status-dot{width:7px;height:7px;border-radius:50%;background:#639922}
-  .status-dot.off{background:#E24B4A}
+  .status-bar{font-size:12px;color:var(--ink-soft);font-weight:500;display:flex;align-items:center;gap:5px;padding:0 2px 8px}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:#3E8F1C}
+  .status-dot.off{background:#C4341F}
   .topbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;padding:0 2px}
   .search-wrap{position:relative;flex:1 1 100%;min-width:180px;order:1}
   .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-soft);font-size:17px}
-  input[type=text]{width:100%;font-family:'Space Grotesk',sans-serif;font-size:15px;padding:11px 12px 11px 36px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink)}
-  input[type=text]:focus{outline:none;border-color:var(--ink-soft)}
+  input[type=text]{width:100%;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:15px;padding:11px 12px 11px 36px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink)}
+  input[type=text]:focus{outline:none;border-color:var(--ink)}
+  input[type=text]::placeholder{color:var(--ink-soft);font-weight:400}
   .row2{display:flex;gap:8px;flex:1 1 100%;order:2;align-items:center;flex-wrap:wrap}
   .name-field{flex:1;min-width:100px}
-  .name-field input{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif}
-  .icon-btn{font-size:12px;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:4px}
-  .icon-btn:hover{border-color:var(--ink-soft);color:var(--ink)}
-  .icon-btn.admin-on{color:var(--dai);border-color:var(--dai)}
+  .name-field input{width:100%;font-size:13px;padding:8px 10px;padding-left:10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif;font-weight:500}
+  .name-field.needs-name input{border-color:var(--pro)}
+  .icon-btn{font-size:12px;font-weight:600;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:4px}
+  .icon-btn:hover{border-color:var(--ink)}
+  .icon-btn.admin-on{color:#fff;background:var(--dai);border-color:var(--dai)}
   .jumpchips{display:flex;gap:6px;overflow-x:auto;padding:0 2px 10px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .jumpchips::-webkit-scrollbar{display:none}
-  .chip{flex:0 0 auto;font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer;white-space:nowrap}
+  .chip{flex:0 0 auto;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer;white-space:nowrap}
   .chip.active{color:#fff;background:var(--ink);border-color:var(--ink)}
   .chip.veg{border-color:var(--veg);color:var(--veg)} .chip.dry{border-color:var(--dry);color:var(--dry)}
   .chip.pro{border-color:var(--pro);color:var(--pro)} .chip.dai{border-color:var(--dai);color:var(--dai)}
   .chip.bre{border-color:var(--bre);color:var(--bre)} .chip.pas{border-color:var(--pas);color:var(--pas)}
+  .chip.veg.active{background:var(--veg);border-color:var(--veg)} .chip.dry.active{background:var(--dry);border-color:var(--dry)}
+  .chip.pro.active{background:var(--pro);border-color:var(--pro)} .chip.dai.active{background:var(--dai);border-color:var(--dai)}
+  .chip.bre.active{background:var(--bre);border-color:var(--bre)} .chip.pas.active{background:var(--pas);border-color:var(--pas)}
   .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-  .col{flex:0 0 88vw;scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column}
-  .col-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px 2px;border-bottom:1px solid var(--line);margin-bottom:8px}
-  .col-title{font-size:15px;font-weight:500}
-  .col-count{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);background:var(--bg);border-radius:20px;padding:3px 9px}
+  .col{flex:0 0 88vw;scroll-snap-align:start;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column}
+  .col-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px 2px;border-bottom:1.5px solid var(--line);margin-bottom:8px}
+  .col-title{font-size:15px;font-weight:700}
+  .col-count{font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);background:var(--bg);border-radius:20px;padding:3px 9px}
   .items{display:flex;flex-direction:column;gap:7px}
-  .item{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--bg)}
-  .item.active{border-left-width:3px}
+  .item{border:1.5px solid var(--line);border-left:5px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--panel)}
+  .item.active{background:var(--bg)}
   .item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .item-name{font-size:14px;line-height:1.35}
+  .item-name{font-size:14px;font-weight:600;line-height:1.35}
+  .item-del{background:none;border:none;color:var(--pro);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0}
   .stepper{display:flex;align-items:center;gap:8px;flex-shrink:0}
-  .stepper button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .stepper button{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-size:18px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .stepper button:active{background:var(--line)}
-  .qty-readout{font-family:'IBM Plex Mono',monospace;font-size:14px;min-width:26px;text-align:center}
-  .item-meta{margin-top:5px;font-size:11px;color:var(--ink-soft);display:flex;justify-content:space-between}
-  .add-item-btn{margin-top:9px;font-size:13px;color:var(--ink-soft);background:none;border:1px dashed var(--line);border-radius:9px;padding:10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:center}
+  .qty-readout{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;min-width:26px;text-align:center}
+  .item-meta{margin-top:5px;font-size:11px;font-weight:600;color:var(--ink-soft);display:flex;justify-content:space-between}
+  .item-comment{margin-top:7px}
+  .item-comment input{width:100%;font-size:12px;font-weight:400;padding:7px 9px;border:1.5px dashed var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif}
+  .item-row-top{display:flex;align-items:flex-start;gap:6px}
+  .add-item-btn{margin-top:9px;font-size:13px;font-weight:600;color:var(--ink-soft);background:none;border:1.5px dashed var(--line);border-radius:9px;padding:10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:center}
   .add-form{display:flex;gap:6px;margin-top:9px}
   .add-form input{flex:1;font-size:13px;padding:9px}
-  .add-form button{font-size:13px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--ink);color:var(--panel);cursor:pointer;font-family:'Space Grotesk',sans-serif}
-  .empty-state{font-size:12px;color:var(--ink-soft);text-align:center;padding:20px 4px}
-  .no-results,.loading{font-size:13px;color:var(--ink-soft);padding:24px;text-align:center}
+  .add-form button{font-size:13px;font-weight:600;padding:9px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--ink);color:var(--panel);cursor:pointer;font-family:'Space Grotesk',sans-serif}
+  .empty-state{font-size:12px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px 4px}
+  .no-results,.loading{font-size:13px;font-weight:500;color:var(--ink-soft);padding:24px;text-align:center}
   .veg{border-left-color:var(--veg)} .veg .col-count{color:var(--veg)}
   .dry{border-left-color:var(--dry)} .dry .col-count{color:var(--dry)}
   .pro{border-left-color:var(--pro)} .pro .col-count{color:var(--pro)}
@@ -66,37 +75,45 @@
   .bre{border-left-color:var(--bre)} .bre .col-count{color:var(--bre)}
   .pas{border-left-color:var(--pas)} .pas .col-count{color:var(--pas)}
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;z-index:50}
-  .sheet{background:var(--panel);width:100%;max-width:560px;max-height:86vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px}
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:-16px;background:var(--panel);padding-top:4px}
-  .sheet-title{font-size:16px;font-weight:500}
-  .sheet-close{background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;padding:4px}
-  .sum-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-left:3px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px;background:var(--bg)}
-  .sum-name{font-size:13px}
-  .sum-cat{font-size:10px;color:var(--ink-soft);display:block;margin-top:2px}
-  .sum-right{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px}
-  .sum-by{font-size:10px;color:var(--ink-soft);font-family:'Space Grotesk',sans-serif;display:block;margin-top:2px}
-  .sum-total{font-size:12px;color:var(--ink-soft);margin:4px 2px 12px}
-  .send-btn{width:100%;padding:13px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-family:'Space Grotesk',sans-serif;cursor:pointer;margin-top:8px}
+  .overlay{position:fixed;inset:0;background:rgba(10,15,10,0.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+  .sheet{background:var(--panel);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:-16px;background:var(--panel);padding-top:4px;z-index:2}
+  .sheet-title{font-size:17px;font-weight:700}
+  .sheet-close{background:none;border:none;font-size:22px;color:var(--ink-soft);cursor:pointer;padding:4px}
+  .sum-cat-head{font-size:13px;font-weight:700;margin:14px 2px 8px;padding-bottom:4px;border-bottom:2px solid var(--line)}
+  .sum-cat-head:first-child{margin-top:0}
+  .sum-row{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-left:5px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px;background:var(--bg)}
+  .sum-row.checked{opacity:0.5}
+  .sum-row.checked .sum-name{text-decoration:line-through}
+  .sum-check{flex-shrink:0;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink)}
+  .sum-check.on{background:var(--veg);border-color:var(--veg);color:#fff}
+  .sum-body{flex:1;min-width:0}
+  .sum-name{font-size:13px;font-weight:600}
+  .sum-cat{font-size:10px;font-weight:600;color:var(--ink-soft);display:block;margin-top:2px}
+  .sum-comment{font-size:11px;font-style:italic;color:var(--ink-soft);margin-top:3px}
+  .sum-right{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;flex-shrink:0}
+  .sum-by{font-size:10px;color:var(--ink-soft);font-family:'Space Grotesk',sans-serif;font-weight:600;display:block;margin-top:2px}
+  .sum-total{font-size:12px;font-weight:600;color:var(--ink-soft);margin:4px 2px 12px}
+  .send-btn{width:100%;padding:13px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;margin-top:8px}
   .send-btn:disabled{opacity:0.4;cursor:not-allowed}
-  .hist-entry{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .hist-entry{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .hist-entry-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
-  .hist-date{font-size:13px;font-weight:500}
-  .hist-meta{font-size:11px;color:var(--ink-soft)}
-  .hist-items{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;display:none}
+  .hist-date{font-size:13px;font-weight:700}
+  .hist-meta{font-size:11px;font-weight:600;color:var(--ink-soft)}
+  .hist-items{margin-top:8px;padding-top:8px;border-top:1.5px solid var(--line);font-size:12px;display:none}
   .hist-items.open{display:block}
-  .hist-line{display:flex;justify-content:space-between;padding:2px 0;color:var(--ink-soft)}
-  .hist-empty,.sum-empty{font-size:13px;color:var(--ink-soft);text-align:center;padding:20px}
+  .hist-line{display:flex;justify-content:space-between;padding:3px 0;color:var(--ink-soft);font-weight:500}
+  .hist-line .hn{color:var(--ink);font-weight:600}
+  .hist-empty,.sum-empty{font-size:13px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px}
 
   @media (min-width:720px){
     .board-root{font-size:14px}
     .topbar{flex-wrap:nowrap}
     .search-wrap{flex:1;order:0}
     .row2{flex:0 0 auto;order:0;width:auto}
-    .name-field{flex:0 0 120px}
+    .name-field{flex:0 0 130px}
     .col{flex:0 0 240px}
-    .item-name{font-size:13px}
-    .stepper button{width:26px;height:26px;font-size:14px}
+    .stepper button{width:28px;height:28px;font-size:15px}
   }
 </style>
 </head>
@@ -109,7 +126,7 @@
       <input type="text" id="search" placeholder="Search items" autocomplete="off">
     </div>
     <div class="row2">
-      <div class="name-field"><input type="text" id="display-name" placeholder="Your name" autocomplete="off"></div>
+      <div class="name-field" id="name-field"><input type="text" id="display-name" placeholder="Your name (required to order)" autocomplete="off"></div>
       <button class="icon-btn" id="history-btn" type="button"><i class="ti ti-history"></i>History</button>
       <button class="icon-btn" id="summary-btn" type="button" style="display:none"><i class="ti ti-clipboard-list"></i>Summary</button>
       <button class="icon-btn" id="admin-btn" type="button"><i class="ti ti-lock"></i>Admin</button>
@@ -124,10 +141,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, getDoc, onSnapshot, updateDoc, setDoc, deleteField, arrayUnion,
-  collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp
+  collection, addDoc, getDocs, query, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ---- 1. PASTE YOUR FIREBASE CONFIG HERE (from Firebase console > Project settings) ----
 const firebaseConfig = {
   apiKey: "AIzaSyBqqcXUkCrank_UNwdSwK8zsBEsQP7uIp4",
   authDomain: "central-order-board.firebaseapp.com",
@@ -136,7 +152,6 @@ const firebaseConfig = {
   messagingSenderId: "131290373437",
   appId: "1:131290373437:web:a732f99e5d22da62113954"
 };
-// ----------------------------------------------------------------------------------------
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -152,31 +167,35 @@ function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 
 let customItems = [];
 let requests = {};
+let deletedItems = [];
+let checkedOrder = {};
 let displayName = localStorage.getItem('kb-display-name') || '';
 let isAdmin = localStorage.getItem('kb-is-admin') === 'true';
 let searchTerm = '';
 let summaryFilter = 'All';
-let saveTimer = {};
+let histFilter = 'All';
+let histTerm = '';
+let commentTimers = {};
 
 document.getElementById('display-name').value = displayName;
 updateAdminBtn();
 renderChips();
 
-// Make sure the shared board document exists before anyone writes to it
 (async () => {
-  try {
+  try{
     const snap = await getDoc(stateRef);
     if (!snap.exists()){
-      await setDoc(stateRef, { requests: {}, customItems: [] });
+      await setDoc(stateRef, { requests: {}, customItems: [], deletedItems: [], checkedOrder: {} });
     }
   } catch(e){ console.error('Init error', e); }
 })();
 
-// Live sync: every connected device gets pushed updates instantly
 onSnapshot(stateRef, (snap) => {
   const data = snap.data() || {};
   requests = data.requests || {};
   customItems = data.customItems || [];
+  deletedItems = data.deletedItems || [];
+  checkedOrder = data.checkedOrder || {};
   setStatus(true);
   render();
 }, (err) => { console.error(err); setStatus(false); });
@@ -192,10 +211,20 @@ function buildItemList(){
     for (const name of CATALOG[cat]) list.push({ id: cat.slice(0,3).toLowerCase()+'-'+slug(name), name, category: cat });
   }
   for (const it of customItems) list.push({ id: it.id, name: it.name, category: it.category });
-  return list;
+  return list.filter(it => !deletedItems.includes(it.id));
+}
+
+function requireName(){
+  const v = (displayName || '').trim();
+  if (v) return true;
+  document.getElementById('name-field').classList.add('needs-name');
+  document.getElementById('display-name').focus();
+  alert('Please enter your name first — we need to know who is requesting each item.');
+  return false;
 }
 
 function setQty(id, delta){
+  if (!requireName()) return;
   const current = requests[id]?.qty || 0;
   const next = Math.max(0, current + delta);
   const field = 'requests.' + id;
@@ -203,11 +232,20 @@ function setQty(id, delta){
     delete requests[id];
     updateDoc(stateRef, { [field]: deleteField() }).catch(console.error);
   } else {
-    const val = { qty: next, unit: 'kg', requestedBy: displayName || 'Unnamed', updatedAt: Date.now() };
+    const val = { qty: next, unit: 'kg', requestedBy: displayName || 'Unnamed', updatedAt: Date.now(), comment: requests[id]?.comment || '' };
     requests[id] = val;
     updateDoc(stateRef, { [field]: val }).catch(console.error);
   }
   render();
+}
+
+function setComment(id, text){
+  if (!requests[id]) return;
+  requests[id].comment = text;
+  clearTimeout(commentTimers[id]);
+  commentTimers[id] = setTimeout(() => {
+    updateDoc(stateRef, { ['requests.' + id + '.comment']: text }).catch(console.error);
+  }, 400);
 }
 
 function addCustomItem(category, name){
@@ -220,7 +258,27 @@ function addCustomItem(category, name){
   render();
 }
 
-function saveName(v){ displayName = v; localStorage.setItem('kb-display-name', v); }
+function deleteItem(id){
+  if (!isAdmin) return;
+  if (!confirm('Remove this item from the list for everyone? This cannot be undone.')) return;
+  deletedItems.push(id);
+  const updates = { deletedItems: arrayUnion(id) };
+  if (requests[id]){ delete requests[id]; updates['requests.' + id] = deleteField(); }
+  updateDoc(stateRef, updates).catch(console.error);
+  render();
+}
+
+function toggleChecked(id){
+  const next = !checkedOrder[id];
+  checkedOrder[id] = next;
+  updateDoc(stateRef, { ['checkedOrder.' + id]: next }).catch(console.error);
+}
+
+function saveName(v){
+  displayName = v;
+  localStorage.setItem('kb-display-name', v);
+  if (v.trim()) document.getElementById('name-field').classList.remove('needs-name');
+}
 function updateAdminBtn(){
   const btn = document.getElementById('admin-btn');
   btn.classList.toggle('admin-on', isAdmin);
@@ -229,12 +287,12 @@ function updateAdminBtn(){
 }
 function handleAdminClick(){
   if (isAdmin){
-    if (confirm('Log out of admin mode on this device?')){ isAdmin = false; localStorage.setItem('kb-is-admin','false'); updateAdminBtn(); }
+    if (confirm('Log out of admin mode on this device?')){ isAdmin = false; localStorage.setItem('kb-is-admin','false'); updateAdminBtn(); render(); }
     return;
   }
   const pin = prompt('Enter admin PIN');
   if (pin === null) return;
-  if (pin === ADMIN_PIN){ isAdmin = true; localStorage.setItem('kb-is-admin','true'); updateAdminBtn(); }
+  if (pin === ADMIN_PIN){ isAdmin = true; localStorage.setItem('kb-is-admin','true'); updateAdminBtn(); render(); }
   else alert('Incorrect PIN.');
 }
 
@@ -246,11 +304,11 @@ async function sendOrder(){
   const entry = {
     clearedAt: Date.now(),
     clearedBy: displayName || 'Admin',
-    items: activeIds.map(id => ({ name: itemsById[id]?.name || id, category: itemsById[id]?.category || 'Unknown', qty: requests[id].qty, requestedBy: requests[id].requestedBy }))
+    items: activeIds.map(id => ({ name: itemsById[id]?.name || id, category: itemsById[id]?.category || 'Unknown', qty: requests[id].qty, requestedBy: requests[id].requestedBy, comment: requests[id].comment || '' }))
   };
   try{
     await addDoc(ordersColl, entry);
-    await updateDoc(stateRef, { requests: {} });
+    await updateDoc(stateRef, { requests: {}, checkedOrder: {} });
     closeModal();
   } catch(e){ console.error(e); alert('Could not send order — check your connection.'); }
 }
@@ -292,9 +350,19 @@ function render(){
       const req = requests[it.id];
       const row = document.createElement('div');
       row.className = 'item' + (req ? ' active' : '');
-      row.innerHTML = '<div class="item-top"><span class="item-name">'+escapeHtml(it.name)+'</span><span class="stepper"><button type="button" aria-label="Decrease" data-act="dec">−</button><span class="qty-readout">'+(req ? req.qty : 0)+'</span><button type="button" aria-label="Increase" data-act="inc">+</button></span></div>' + (req ? '<div class="item-meta"><span>'+escapeHtml(req.requestedBy)+'</span><span>'+req.qty+' kg</span></div>' : '');
+      row.innerHTML =
+        '<div class="item-row-top"><span class="item-name" style="flex:1">'+escapeHtml(it.name)+'</span>' +
+        (isAdmin ? '<button class="item-del" type="button" title="Delete item" data-act="del"><i class="ti ti-trash"></i></button>' : '') +
+        '</div>' +
+        '<div class="item-top" style="margin-top:4px"><span></span><span class="stepper"><button type="button" aria-label="Decrease" data-act="dec">−</button><span class="qty-readout">'+(req ? req.qty : 0)+'</span><button type="button" aria-label="Increase" data-act="inc">+</button></span></div>' +
+        (req ? '<div class="item-meta"><span>'+escapeHtml(req.requestedBy)+'</span><span>'+req.qty+' kg</span></div>' : '') +
+        (req ? '<div class="item-comment"><input type="text" placeholder="Add a note (optional)" value="'+escapeHtml(req.comment||'')+'" data-act="comment"/></div>' : '');
       row.querySelector('[data-act="dec"]').onclick = () => setQty(it.id, -1);
       row.querySelector('[data-act="inc"]').onclick = () => setQty(it.id, 1);
+      const delBtn = row.querySelector('[data-act="del"]');
+      if (delBtn) delBtn.onclick = () => deleteItem(it.id);
+      const commentInput = row.querySelector('[data-act="comment"]');
+      if (commentInput) commentInput.addEventListener('input', (e) => setComment(it.id, e.target.value));
       itemsEl.appendChild(row);
     }
     if (!term){
@@ -323,55 +391,93 @@ function openModal(html){
 function closeModal(){ document.getElementById('modal-root').innerHTML = ''; }
 window.closeModal = closeModal;
 
-// ---- Admin: all requested items in one place, filterable by category ----
+// ---- Admin: order summary, grouped by category, with tick-off checklist ----
 function renderSummary(){
   const itemsById = {}; for (const it of buildItemList()) itemsById[it.id] = it;
   const all = Object.keys(requests).map(id => ({ id, ...itemsById[id], ...requests[id] })).filter(r => r.name);
   const filtered = summaryFilter === 'All' ? all : all.filter(r => r.category === summaryFilter);
-  filtered.sort((a,b) => a.category === b.category ? a.name.localeCompare(b.name) : a.category.localeCompare(b.category));
 
   const chips = ['All', ...Object.keys(CATALOG)].map(c =>
     '<button type="button" class="chip '+(c!=='All'?CAT_CLASS[c]:'')+' '+(summaryFilter===c?'active':'')+'" data-filter="'+escapeHtml(c)+'">'+c+'</button>'
   ).join('');
 
-  const rows = filtered.length === 0
-    ? '<div class="sum-empty">No requested items in this category.</div>'
-    : filtered.map(r => '<div class="sum-row" style="border-left-color:var(--'+CAT_CLASS[r.category]+')"><div><span class="sum-name">'+escapeHtml(r.name)+'</span><span class="sum-cat">'+escapeHtml(r.category)+'</span></div><div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div></div>').join('');
+  let rowsHtml;
+  if (filtered.length === 0){
+    rowsHtml = '<div class="sum-empty">No requested items in this category.</div>';
+  } else if (summaryFilter === 'All'){
+    rowsHtml = '';
+    for (const cat of Object.keys(CATALOG)){
+      const inCat = filtered.filter(r => r.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
+      if (inCat.length === 0) continue;
+      rowsHtml += '<div class="sum-cat-head" style="color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
+      rowsHtml += inCat.map(sumRowHtml).join('');
+    }
+  } else {
+    rowsHtml = filtered.sort((a,b)=>a.name.localeCompare(b.name)).map(sumRowHtml).join('');
+  }
 
+  const checkedCount = filtered.filter(r => checkedOrder[r.id]).length;
   const html =
     '<div class="sheet-head"><span class="sheet-title">Order summary</span><button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="jumpchips" id="sum-chips" style="padding-bottom:10px">' + chips + '</div>' +
-    '<div class="sum-total">'+all.length+' items requested total'+(summaryFilter!=='All' ? ' · '+filtered.length+' in '+summaryFilter : '')+'</div>' +
-    '<div id="sum-rows">' + rows + '</div>' +
+    '<div class="sum-total">'+checkedCount+' of '+filtered.length+' ticked off'+(summaryFilter!=='All' ? ' in '+summaryFilter : ' total')+'</div>' +
+    '<div id="sum-rows">' + rowsHtml + '</div>' +
     '<button class="send-btn" id="send-order-btn" '+(all.length===0?'disabled':'')+'><i class="ti ti-send" style="vertical-align:-2px;margin-right:5px"></i>Mark sent &amp; clear board</button>';
   openModal(html);
-  document.querySelectorAll('#sum-chips .chip').forEach(chip => {
-    chip.onclick = () => { summaryFilter = chip.dataset.filter; renderSummary(); };
-  });
+  document.querySelectorAll('#sum-chips .chip').forEach(chip => { chip.onclick = () => { summaryFilter = chip.dataset.filter; renderSummary(); }; });
+  document.querySelectorAll('.sum-check').forEach(chk => { chk.onclick = () => { toggleChecked(chk.dataset.id); renderSummary(); }; });
   document.getElementById('send-order-btn').onclick = sendOrder;
 }
+function sumRowHtml(r){
+  const on = !!checkedOrder[r.id];
+  return '<div class="sum-row '+(on?'checked':'')+'" style="border-left-color:var(--'+CAT_CLASS[r.category]+')">' +
+    '<button type="button" class="sum-check '+(on?'on':'')+'" data-id="'+r.id+'">'+(on?'<i class="ti ti-check"></i>':'')+'</button>' +
+    '<div class="sum-body"><span class="sum-name">'+escapeHtml(r.name)+'</span><span class="sum-cat">'+escapeHtml(r.category)+'</span>' +
+    (r.comment ? '<div class="sum-comment">"'+escapeHtml(r.comment)+'"</div>' : '') + '</div>' +
+    '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div></div>';
+}
 
+// ---- History: colored category filters + search ----
+let historyCache = [];
 async function openHistory(){
-  openModal('<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div><div class="loading">Loading…</div>');
+  openModal(historyShell('<div class="loading">Loading…</div>'));
   try{
     const q = query(ordersColl, orderBy('clearedAt', 'desc'), limit(20));
     const snap = await getDocs(q);
-    if (snap.empty){
-      openModal('<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div><div class="hist-empty">No past orders yet.</div>');
-      return;
-    }
-    const rows = [];
-    let idx = 0;
-    snap.forEach(docSnap => {
-      const h = docSnap.data();
-      const date = new Date(h.clearedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      const itemsHtml = (h.items||[]).map(it => '<div class="hist-line"><span>'+escapeHtml(it.name)+'</span><span>'+it.qty+' kg &middot; '+escapeHtml(it.requestedBy)+'</span></div>').join('');
-      rows.push('<div class="hist-entry"><div class="hist-entry-head" data-idx="'+idx+'"><span class="hist-date">'+date+'</span><span class="hist-meta">'+(h.items||[]).length+' items &middot; sent by '+escapeHtml(h.clearedBy)+'</span></div><div class="hist-items" id="hist-'+idx+'">'+itemsHtml+'</div></div>');
-      idx++;
-    });
-    openModal('<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div>' + rows.join(''));
-    document.querySelectorAll('.hist-entry-head').forEach(h => { h.onclick = () => document.getElementById('hist-'+h.dataset.idx).classList.toggle('open'); });
-  } catch(e){ console.error(e); openModal('<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div><div class="hist-empty">Could not load history.</div>'); }
+    historyCache = [];
+    snap.forEach(d => historyCache.push(d.data()));
+    renderHistory();
+  } catch(e){ console.error(e); openModal(historyShell('<div class="hist-empty">Could not load history.</div>')); }
+}
+function historyShell(inner){
+  const chips = ['All', ...Object.keys(CATALOG)].map(c =>
+    '<button type="button" class="chip '+(c!=='All'?CAT_CLASS[c]:'')+' '+(histFilter===c?'active':'')+'" data-hfilter="'+escapeHtml(c)+'">'+c+'</button>'
+  ).join('');
+  return '<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="search-wrap" style="margin-bottom:10px"><i class="ti ti-search"></i><input type="text" id="hist-search" placeholder="Search past items" value="'+escapeHtml(histTerm)+'"/></div>' +
+    '<div class="jumpchips" id="hist-chips" style="padding-bottom:10px">' + chips + '</div>' +
+    '<div id="hist-body">' + inner + '</div>';
+}
+function renderHistory(){
+  const term = histTerm.trim().toLowerCase();
+  const rows = [];
+  let idx = 0;
+  for (const h of historyCache){
+    let its = h.items || [];
+    if (histFilter !== 'All') its = its.filter(it => it.category === histFilter);
+    if (term) its = its.filter(it => it.name.toLowerCase().includes(term));
+    if (its.length === 0) continue;
+    const date = new Date(h.clearedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const itemsHtml = its.map(it => '<div class="hist-line"><span class="hn">'+escapeHtml(it.name)+'</span><span>'+it.qty+' kg &middot; '+escapeHtml(it.requestedBy)+'</span></div>').join('');
+    rows.push('<div class="hist-entry"><div class="hist-entry-head" data-idx="'+idx+'"><span class="hist-date">'+date+'</span><span class="hist-meta">'+its.length+' items &middot; sent by '+escapeHtml(h.clearedBy)+'</span></div><div class="hist-items open" id="hist-'+idx+'">'+itemsHtml+'</div></div>');
+    idx++;
+  }
+  const inner = rows.length === 0 ? '<div class="hist-empty">No matching orders.</div>' : rows.join('');
+  document.getElementById('hist-body').innerHTML = inner;
+  document.querySelectorAll('.hist-entry-head').forEach(h => { h.onclick = () => document.getElementById('hist-'+h.dataset.idx).classList.toggle('open'); });
+  document.querySelectorAll('#hist-chips .chip').forEach(chip => { chip.onclick = () => { histFilter = chip.dataset.hfilter; document.querySelectorAll('#hist-chips .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); renderHistory(); }; });
+  const s = document.getElementById('hist-search');
+  if (s) s.oninput = (e) => { histTerm = e.target.value; renderHistory(); };
 }
 
 document.getElementById('search').addEventListener('input', (e) => { searchTerm = e.target.value; render(); });
