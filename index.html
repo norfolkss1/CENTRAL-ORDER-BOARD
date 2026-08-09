@@ -125,7 +125,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, doc, onSnapshot, updateDoc, deleteField, arrayUnion,
+  getFirestore, doc, onSnapshot, setDoc, deleteField, arrayUnion,
   collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -193,11 +193,11 @@ function setQty(id, delta){
   const field = 'requests.' + id;
   if (next === 0){
     delete requests[id];
-    updateDoc(stateRef, { [field]: deleteField() }).catch(console.error);
+    setDoc(stateRef, { [field]: deleteField() }, { merge: true }).catch(console.error);
   } else {
     const val = { qty: next, unit: 'kg', requestedBy: displayName || 'Unnamed', updatedAt: Date.now() };
     requests[id] = val;
-    updateDoc(stateRef, { [field]: val }).catch(console.error);
+    setDoc(stateRef, { [field]: val }, { merge: true }).catch(console.error);
   }
   render();
 }
@@ -208,7 +208,7 @@ function addCustomItem(category, name){
   const id = 'custom-'+slug(category)+'-'+slug(name)+'-'+Date.now().toString(36);
   const item = { id, name, category };
   customItems.push(item);
-  updateDoc(stateRef, { customItems: arrayUnion(item) }).catch(console.error);
+  setDoc(stateRef, { customItems: arrayUnion(item) }, { merge: true }).catch(console.error);
   render();
 }
 
@@ -242,7 +242,7 @@ async function sendOrder(){
   };
   try{
     await addDoc(ordersColl, entry);
-    await updateDoc(stateRef, { requests: {} });
+    await setDoc(stateRef, { requests: {} }, { merge: true });
     closeModal();
   } catch(e){ console.error(e); alert('Could not send order — check your connection.'); }
 }
