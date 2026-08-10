@@ -34,6 +34,15 @@
   .icon-btn:hover{border-color:var(--ink)}
   .icon-btn.admin-on{color:#fff;background:var(--dai);border-color:var(--dai)}
   .sq-btn{width:32px;height:32px;flex-shrink:0;padding:0;justify-content:center;font-size:15px}
+
+  .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .gate-card{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:28px 24px;max-width:340px;width:100%;text-align:center}
+  .gate-card i{font-size:30px;color:var(--ink-soft)}
+  .gate-card h2{font-size:17px;font-weight:700;margin:10px 0 4px}
+  .gate-card p{font-size:13px;color:var(--ink-soft);margin:0 0 16px;font-weight:500}
+  .gate-card input{text-align:center;letter-spacing:2px;margin-bottom:12px}
+  .gate-card button{width:100%;padding:12px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+  .gate-error{color:var(--pro);font-size:12px;font-weight:600;margin:-6px 0 12px;display:none}
   .jumpchips{display:flex;gap:6px;overflow-x:auto;padding:0 2px 10px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .jumpchips::-webkit-scrollbar{display:none}
   .chip{flex:0 0 auto;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer;white-space:nowrap}
@@ -120,7 +129,17 @@
 </style>
 </head>
 <body>
-<div class="board-root">
+<div class="gate" id="access-gate" style="display:none">
+  <div class="gate-card">
+    <i class="ti ti-lock"></i>
+    <h2>Kitchen order board</h2>
+    <p>Enter the team access code to view and use the board.</p>
+    <input type="password" id="gate-pin" placeholder="Access code" inputmode="numeric" autocomplete="off">
+    <div class="gate-error" id="gate-error">Incorrect code — try again.</div>
+    <button type="button" id="gate-submit">Unlock</button>
+  </div>
+</div>
+<div class="board-root" id="board-root" style="display:none">
   <div class="status-bar"><span class="status-dot" id="status-dot"></span><span id="status-text">Connecting…</span></div>
   <div class="topbar">
     <div class="search-wrap">
@@ -163,6 +182,7 @@ const ordersColl = collection(db, "order_history");
 const CATALOG = {"Vegetables & Fruits": ["Apple Green", "Asparagus", "Avocado", "Banana", "Basil", "Beetroot", "Berries", "Broccolini", "Capsicum", "Carrot", "Cauliflower", "Celery", "Cherry Tomato", "Chervil", "Chili", "Chives", "Corriander", "Cucumber", "Dill", "Dragon Fruit", "Eggplant", "Fennel", "French Beans", "Garlic - Peel/Whole", "Kale", "Kiwi", "Leek", "Lemon", "Lettuce Radichio", "Lettuce Romain", "Letuce Iceberg", "Lime", "Micross", "Mint", "Mushroom Buton", "Onion: Red/White/Brown", "Orange", "Padron Peppers", "Papaya Green", "Parsley", "Passion Fruit", "Pineapple", "Plum", "Pomegranate", "Potato Finger", "Potato Local", "Purple Potato", "Red Cabbage", "Rock Melon", "Rocket Baby", "Rosemary", "Snow Peas", "Spinach", "Spring Onion", "Strawberry", "Sweet Potato", "Taragon", "Thyme", "Tomato Local", "Watermelon", "Zuchini Green"], "Dry Products": ["Agar-Agar", "Anchovie Black", "Apple Cider Vinegar", "BBQ Sauce", "Baked Beans", "Baking Powder", "Balsamic", "Bay Leaf", "Black Olive", "Black Pepper Whole", "Black Quinoa", "Bran Flakes", "Chia Seeds", "Chick Pea", "Chilli Jam", "Choco Pop", "Cinamon Powder", "Coconut Water", "Condenced Milk", "Corn Flakes", "Corn Starch", "Dry Apricot", "Dry Crunberry", "Egg", "Falafel Frozen", "Fish Sauce", "Flax Seed", "Foul Madames", "French Fries", "Frying Oil", "Gherkin", "Green Olives", "Green Peas Frozen", "Hazelnut", "Honey", "Horseradish Sauce", "Icing Sugar", "Ketchup", "Macaroni", "Maple Syrup", "Mayonaise", "Mustard", "Nutella", "Oil Corn", "Olive Oil", "Panko Breadcrumb", "Paprika", "Peanut", "Peanut Butter Crunchy", "Pecans", "Penne", "Picquilo Peppers", "Pista Stick/whole", "Pomegranat Molases", "Prunes", "Pumpkin Seed", "Red Vinegar", "Rice Vinegar", "Saffron", "Salt Fine", "Salt Maldon", "Sambal Oliek", "Soy Sauce", "Spaghetti", "Squid Ink", "Sushi Rice", "Sweet Potato Fries", "T45 Flour", "Tagliatelle", "Tahina", "Tempura Mix", "Tomato Paste", "Tomato Peeled", "Truffle Oil", "Walnut", "White Vinegar", "Whole Oats", "Worcesteshire Sauce"], "Protein": ["Beef Cold Cuts", "Beef Croqutas", "Beef Cuberoll Prime", "Beef Sausage", "Beef Trimmings", "Cheese Croquetas", "Chicken Breast W/wing", "Chicken Croquetas", "Chicken Sausage", "Chicken Whole", "Cod Fillet", "Lamb Rack", "Salmon Whole", "Shrimp 16/20", "Shrimp U15 With Head", "Smocked Mackrel", "Smocked Salmon", "Squid", "Turkey Bacon"], "Dairy": ["Arabic Cheese", "Brie Cheese", "Burata", "Butter", "Cheddar Cheese", "Cream", "Cream Cheese", "Feta", "Labneh", "Manchego Cheese", "Milk Long Life", "Parmesan", "Provolone", "Ricotta", "Yoghurt"], "Bread": ["Arabic Bread", "Bagel", "Bocadillo Bread", "Brioche", "Burger Bun", "Crystal Bread", "English Muffin", "Grisini", "Lavash", "Slider Bun", "Sourdough", "White Sourdough"], "Pastry": ["Acai", "Arabic Sweet", "Bamboo Leaves", "Banana Chips", "Chia", "Chocolate", "Coco Jalila Chocolate", "Cocoa Powder", "Dates", "Flour", "Frozen Berries", "Fruit Puree", "ME Macaroones", "Oats", "Pinacolada Icecream", "Pistachio Spread", "Sago", "Sugar", "Whipping Cream"]};
 const CAT_CLASS = { "Vegetables & Fruits": "veg", "Dry Products": "dry", "Protein": "pro", "Dairy": "dai", "Bread": "bre", "Pastry": "pas" };
 const ADMIN_PIN = "2580"; // change this before sharing the app
+const USER_PIN = "4671"; // change this too — anyone with this code can use the board
 
 function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -332,6 +352,13 @@ function renderChips(){
 }
 
 function render(){
+  // Remember which comment box (if any) is focused so re-renders (triggered by live
+  // updates from other devices) don't kick the typing user out of their input mid-word.
+  const active = document.activeElement;
+  const focusedCommentId = (active && active.dataset && active.dataset.commentId) ? active.dataset.commentId : null;
+  const selStart = focusedCommentId ? active.selectionStart : null;
+  const selEnd = focusedCommentId ? active.selectionEnd : null;
+
   const boardEl = document.getElementById('board');
   const items = buildItemList();
   const term = searchTerm.trim().toLowerCase();
@@ -363,7 +390,7 @@ function render(){
         '</div>' +
         '<div class="item-top" style="margin-top:4px"><span></span><span class="stepper"><button type="button" aria-label="Decrease" data-act="dec">−</button><span class="qty-readout">'+(req ? req.qty : 0)+'</span><button type="button" aria-label="Increase" data-act="inc">+</button></span></div>' +
         (req ? '<div class="item-meta"><span>'+escapeHtml(req.requestedBy)+'</span><span>'+req.qty+' kg</span></div>' : '') +
-        (req ? '<div class="item-comment"><input type="text" placeholder="Add a note (optional)" value="'+escapeHtml(req.comment||'')+'" data-act="comment"/></div>' : '');
+        (req ? '<div class="item-comment"><input type="text" placeholder="Add a note (optional)" value="'+escapeHtml(req.comment||'')+'" data-act="comment" data-comment-id="'+it.id+'"/></div>' : '');
       row.querySelector('[data-act="dec"]').onclick = () => setQty(it.id, -1);
       row.querySelector('[data-act="inc"]').onclick = () => setQty(it.id, 1);
       const delBtn = row.querySelector('[data-act="del"]');
@@ -388,6 +415,11 @@ function render(){
       };
       col.appendChild(addBtn);
     }
+  }
+
+  if (focusedCommentId){
+    const el = document.querySelector('[data-comment-id="'+focusedCommentId+'"]');
+    if (el){ el.focus(); if (selStart !== null) el.setSelectionRange(selStart, selEnd); }
   }
 }
 
@@ -546,6 +578,31 @@ document.getElementById('display-name').addEventListener('change', (e) => saveNa
 document.getElementById('admin-btn').addEventListener('click', handleAdminClick);
 document.getElementById('history-btn').addEventListener('click', openHistory);
 document.getElementById('summary-btn').addEventListener('click', () => { summaryFilter = 'All'; renderSummary(); });
+
+// ---- Access gate: a team-wide code required before anyone can view/use the board ----
+function checkGate(){
+  if (localStorage.getItem('kb-user-authed') === 'true'){
+    document.getElementById('board-root').style.display = '';
+  } else {
+    document.getElementById('access-gate').style.display = 'flex';
+    document.getElementById('gate-pin').focus();
+  }
+}
+function submitGate(){
+  const val = document.getElementById('gate-pin').value;
+  if (val === USER_PIN){
+    localStorage.setItem('kb-user-authed', 'true');
+    document.getElementById('access-gate').style.display = 'none';
+    document.getElementById('board-root').style.display = '';
+  } else {
+    document.getElementById('gate-error').style.display = 'block';
+    document.getElementById('gate-pin').value = '';
+    document.getElementById('gate-pin').focus();
+  }
+}
+document.getElementById('gate-submit').addEventListener('click', submitGate);
+document.getElementById('gate-pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGate(); });
+checkGate();
 </script>
 </body>
 </html>
