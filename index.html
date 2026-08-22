@@ -83,6 +83,7 @@
   .stepper button:active{background:var(--line)}
   .qty-readout{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;min-width:26px;text-align:center}
   .item-meta{margin-top:5px;font-size:11px;font-weight:600;color:var(--ink-soft);display:flex;justify-content:space-between}
+  .item-time{margin-top:3px;font-size:10px;font-weight:500;color:var(--ink-soft)}
   .item-comment{margin-top:7px}
   .item-comment input{width:100%;font-size:12px;font-weight:400;padding:7px 9px;border:1.5px dashed var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif}
   .item-row-top{display:flex;align-items:flex-start;gap:6px}
@@ -114,6 +115,13 @@
   .sum-right{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;flex-shrink:0}
   .sum-by{font-size:10px;color:var(--ink-soft);font-family:'Space Grotesk',sans-serif;font-weight:600;display:block;margin-top:2px}
   .sum-total{font-size:12px;font-weight:600;color:var(--ink-soft);margin:4px 2px 12px}
+  .sum-time{font-size:10px;font-weight:500;color:var(--ink-soft);margin-top:3px}
+  .move-btn{flex-shrink:0;width:30px;height:30px;border-radius:7px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .move-btn:hover{border-color:var(--ink)}
+  .hold-section{margin-top:20px;padding-top:14px;border-top:2px dashed var(--line)}
+  .hold-head{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .hold-note{font-size:11px;font-weight:500;color:var(--ink-soft);margin-bottom:10px}
+  .sum-row.held{background:#F5F2E4;border-style:dashed}
   .send-btn{width:100%;padding:13px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;margin-top:8px}
   .send-btn:disabled{opacity:0.4;cursor:not-allowed}
   .hist-list-row{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--line);border-radius:10px;padding:12px 13px;margin-bottom:8px;cursor:pointer;background:var(--panel)}
@@ -191,11 +199,16 @@ const USER_PIN = "4671"; // change this too — anyone with this code can use th
 
 function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(ts){
+  if (!ts) return '';
+  return new Date(ts).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
 
 let customItems = [];
 let requests = {};
 let deletedItems = [];
 let checkedOrder = {};
+let onHold = {};
 let displayName = localStorage.getItem('kb-display-name') || '';
 let isAdmin = localStorage.getItem('kb-is-admin') === 'true';
 let searchTerm = '';
@@ -217,7 +230,7 @@ renderChips();
   try{
     const snap = await getDoc(stateRef);
     if (!snap.exists()){
-      await setDoc(stateRef, { requests: {}, customItems: [], deletedItems: [], checkedOrder: {} });
+      await setDoc(stateRef, { requests: {}, customItems: [], deletedItems: [], checkedOrder: {}, onHold: {} });
     }
   } catch(e){ console.error('Init error', e); }
 })();
@@ -228,6 +241,7 @@ onSnapshot(stateRef, (snap) => {
   customItems = data.customItems || [];
   deletedItems = data.deletedItems || [];
   checkedOrder = data.checkedOrder || {};
+  onHold = data.onHold || {};
   setStatus(true);
   render();
 }, (err) => { console.error(err); setStatus(false); });
@@ -264,7 +278,14 @@ function setQty(id, delta){
     delete requests[id];
     updateDoc(stateRef, { [field]: deleteField() }).catch(console.error);
   } else {
-    const val = { qty: next, unit: 'kg', requestedBy: displayName || 'Unnamed', updatedAt: Date.now(), comment: requests[id]?.comment || '' };
+    const val = {
+      qty: next, unit: 'kg',
+      requestedBy: requests[id]?.requestedBy || displayName || 'Unnamed',
+      requestedAt: requests[id]?.requestedAt || Date.now(),
+      updatedAt: Date.now(),
+      updatedBy: displayName || 'Unnamed',
+      comment: requests[id]?.comment || ''
+    };
     requests[id] = val;
     updateDoc(stateRef, { [field]: val }).catch(console.error);
   }
@@ -300,8 +321,38 @@ function deleteItem(id){
   render();
 }
 
-function toggleChecked(id){
-  const next = !checkedOrder[id];
+// Move an item between the main summary list and the on-hold list (admin only).
+// All original request info (who asked, when) travels with it and is never rewritten.
+function moveToHold(id){
+  if (!isAdmin) return;
+  const r = requests[id];
+  if (!r) return;
+  const held = { ...r, heldAt: Date.now(), heldBy: displayName || 'Admin' };
+  onHold[id] = held;
+  delete requests[id];
+  delete checkedOrder[id];
+  updateDoc(stateRef, {
+    ['onHold.' + id]: held,
+    ['requests.' + id]: deleteField(),
+    ['checkedOrder.' + id]: deleteField()
+  }).catch(console.error);
+  render();
+}
+function moveToOrder(id){
+  if (!isAdmin) return;
+  const h = onHold[id];
+  if (!h) return;
+  const { heldAt, heldBy, ...rest } = h;
+  requests[id] = rest;
+  delete onHold[id];
+  updateDoc(stateRef, {
+    ['requests.' + id]: rest,
+    ['onHold.' + id]: deleteField()
+  }).catch(console.error);
+  render();
+}
+
+function toggleChecked(id){  const next = !checkedOrder[id];
   checkedOrder[id] = next;
   updateDoc(stateRef, { ['checkedOrder.' + id]: next }).catch(console.error);
 }
@@ -331,12 +382,23 @@ async function sendOrder(){
   if (!isAdmin){ alert('Only admins can mark an order as sent.'); return; }
   const activeIds = Object.keys(requests);
   if (activeIds.length === 0){ alert('The board has no requested items yet.'); return; }
-  if (!confirm('Mark this order as sent? It will be saved to history and the board cleared for everyone.')) return;
+  const holdCount = Object.keys(onHold).length;
+  if (!confirm('Mark this order as sent? It will be saved to history and the board cleared for everyone.' + (holdCount ? '\n\n' + holdCount + ' on-hold item(s) will stay on hold and carry over.' : ''))) return;
   const itemsById = {}; for (const it of buildItemList()) itemsById[it.id] = it;
+  const packItem = (id, src) => ({
+    name: itemsById[id]?.name || id,
+    category: itemsById[id]?.category || 'Unknown',
+    qty: src[id].qty,
+    requestedBy: src[id].requestedBy,
+    requestedAt: src[id].requestedAt || src[id].updatedAt || null,
+    comment: src[id].comment || ''
+  });
   const entry = {
     clearedAt: Date.now(),
     clearedBy: displayName || 'Admin',
-    items: activeIds.map(id => ({ name: itemsById[id]?.name || id, category: itemsById[id]?.category || 'Unknown', qty: requests[id].qty, requestedBy: requests[id].requestedBy, comment: requests[id].comment || '' }))
+    items: activeIds.map(id => packItem(id, requests)),
+    // snapshot of what was still on hold at the time this order went out
+    onHoldAtSend: Object.keys(onHold).map(id => ({ ...packItem(id, onHold), heldBy: onHold[id].heldBy || null, heldAt: onHold[id].heldAt || null }))
   };
   try{
     await addDoc(ordersColl, entry);
@@ -395,6 +457,7 @@ function render(){
         '</div>' +
         '<div class="item-top" style="margin-top:4px"><span></span><span class="stepper"><button type="button" aria-label="Decrease" data-act="dec">−</button><span class="qty-readout">'+(req ? req.qty : 0)+'</span><button type="button" aria-label="Increase" data-act="inc">+</button></span></div>' +
         (req ? '<div class="item-meta"><span>'+escapeHtml(req.requestedBy)+'</span><span>'+req.qty+' kg</span></div>' : '') +
+        (req ? '<div class="item-time"><i class="ti ti-clock" style="vertical-align:-1px;margin-right:3px"></i>'+fmtTime(req.requestedAt || req.updatedAt)+'</div>' : '') +
         (req ? '<div class="item-comment"><input type="text" placeholder="Add a note (optional)" value="'+escapeHtml(req.comment||'')+'" data-act="comment" data-comment-id="'+it.id+'"/></div>' : '');
       row.querySelector('[data-act="dec"]').onclick = () => setQty(it.id, -1);
       row.querySelector('[data-act="inc"]').onclick = () => setQty(it.id, 1);
@@ -475,26 +538,66 @@ function renderSummary(){
   }
 
   const checkedCount = filtered.filter(r => checkedOrder[r.id]).length;
+
+  // ---- On-hold section: carries over between orders, never cleared by "mark sent" ----
+  const heldAll = Object.keys(onHold).map(id => ({ id, ...itemsById[id], ...onHold[id] })).filter(r => r.name);
+  const heldFiltered = summaryFilter === 'All' ? heldAll : heldAll.filter(r => r.category === summaryFilter);
+  let holdHtml = '';
+  if (heldAll.length > 0){
+    let heldRows;
+    if (heldFiltered.length === 0){
+      heldRows = '<div class="sum-empty">Nothing on hold in this category.</div>';
+    } else if (summaryFilter === 'All'){
+      heldRows = '';
+      for (const cat of Object.keys(CATALOG)){
+        const inCat = heldFiltered.filter(r => r.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
+        if (inCat.length === 0) continue;
+        heldRows += '<div class="sum-cat-head" style="background:var(--'+CAT_CLASS[cat]+'-bg);color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
+        heldRows += inCat.map(r => holdRowHtml(r)).join('');
+      }
+    } else {
+      heldRows = heldFiltered.sort((a,b)=>a.name.localeCompare(b.name)).map(r => holdRowHtml(r)).join('');
+    }
+    holdHtml =
+      '<div class="hold-section"><div class="hold-head"><i class="ti ti-player-pause"></i>On hold ('+heldAll.length+')</div>' +
+      '<div class="hold-note">These stay on the board after an order is sent, and can be moved back into the next order.</div>' +
+      heldRows + '</div>';
+  }
+
   const html =
     '<div class="sheet-head"><span class="sheet-title">Order summary</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="jumpchips" id="sum-chips" style="padding-bottom:10px">' + chips + '</div>' +
     '<div class="sum-total">'+checkedCount+' of '+filtered.length+' ticked off'+(summaryFilter!=='All' ? ' in '+summaryFilter : ' total')+'</div>' +
     '<div id="sum-rows">' + rowsHtml + '</div>' +
+    holdHtml +
     (isAdmin ? '<button class="send-btn" id="send-order-btn" '+(all.length===0?'disabled':'')+'><i class="ti ti-send" style="vertical-align:-2px;margin-right:5px"></i>Mark sent &amp; clear board</button>' : '');
   openPreservingFullscreen(html);
   document.querySelectorAll('#sum-chips .chip').forEach(chip => { chip.onclick = () => { summaryFilter = chip.dataset.filter; renderSummary(); }; });
   document.querySelectorAll('.sum-check').forEach(chk => { chk.onclick = () => { toggleChecked(chk.dataset.id); renderSummary(); }; });
+  document.querySelectorAll('[data-hold]').forEach(b => { b.onclick = () => { moveToHold(b.dataset.hold); renderSummary(); }; });
+  document.querySelectorAll('[data-unhold]').forEach(b => { b.onclick = () => { moveToOrder(b.dataset.unhold); renderSummary(); }; });
   bindFsToggle(renderSummary);
   const sendBtn = document.getElementById('send-order-btn');
   if (sendBtn) sendBtn.onclick = sendOrder;
+}
+function holdRowHtml(r){
+  return '<div class="sum-row held" style="border-left-color:var(--'+CAT_CLASS[r.category]+')">' +
+    (isAdmin ? '<button type="button" class="move-btn" data-unhold="'+r.id+'" title="Move back into the order"><i class="ti ti-arrow-back-up"></i></button>' : '') +
+    '<div class="sum-body"><span class="sum-name">'+escapeHtml(r.name)+'</span><span class="sum-cat">'+escapeHtml(r.category)+'</span>' +
+    (r.comment ? '<div class="sum-comment">"'+escapeHtml(r.comment)+'"</div>' : '') +
+    '<div class="sum-time">Requested '+fmtTime(r.requestedAt || r.updatedAt)+(r.heldAt ? ' · held '+fmtTime(r.heldAt) : '')+'</div></div>' +
+    '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div></div>';
 }
 function sumRowHtml(r){
   const on = !!checkedOrder[r.id];
   return '<div class="sum-row '+(on?'checked':'')+'" style="border-left-color:var(--'+CAT_CLASS[r.category]+')">' +
     '<button type="button" class="sum-check '+(on?'on':'')+'" data-id="'+r.id+'">'+(on?'<i class="ti ti-check"></i>':'')+'</button>' +
     '<div class="sum-body"><span class="sum-name">'+escapeHtml(r.name)+'</span><span class="sum-cat">'+escapeHtml(r.category)+'</span>' +
-    (r.comment ? '<div class="sum-comment">"'+escapeHtml(r.comment)+'"</div>' : '') + '</div>' +
-    '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div></div>';
+    (r.comment ? '<div class="sum-comment">"'+escapeHtml(r.comment)+'"</div>' : '') +
+    '<div class="sum-time">Requested '+fmtTime(r.requestedAt || r.updatedAt)+'</div></div>' +
+    '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div>' +
+    (isAdmin ? '<button type="button" class="move-btn" data-hold="'+r.id+'" title="Move to on-hold list"><i class="ti ti-player-pause"></i></button>' : '') +
+    '</div>';
 }
 
 // keep the same overlay/sheet element alive across a re-render so fullscreen state doesn't flicker
@@ -563,7 +666,7 @@ function renderHistoryDetail(){
     '<div class="hist-meta" style="margin-bottom:10px">Sent by '+escapeHtml(h.clearedBy)+' &middot; '+(h.items||[]).length+' items total</div>' +
     '<div class="search-wrap" style="margin-bottom:10px"><i class="ti ti-search"></i><input type="text" id="hist-detail-search" placeholder="Search items in this order" value="'+escapeHtml(histDetailTerm)+'"/></div>' +
     '<div class="jumpchips" id="hist-detail-chips" style="padding-bottom:10px">' + chips + '</div>' +
-    '<div id="hist-detail-rows">' + rowsHtml + '</div>';
+    '<div id="hist-detail-rows">' + rowsHtml + heldSnapshotHtml(h) + '</div>';
   openPreservingFullscreen(html);
   bindFsToggle(renderHistoryDetail);
   document.getElementById('hist-back').onclick = () => { histOpenIdx = null; renderHistoryList(); };
@@ -571,10 +674,19 @@ function renderHistoryDetail(){
   const s = document.getElementById('hist-detail-search');
   if (s){ s.oninput = (e) => { histDetailTerm = e.target.value; renderHistoryDetail(); }; s.focus(); s.selectionStart = s.selectionEnd = s.value.length; }
 }
+function heldSnapshotHtml(h){
+  const held = h.onHoldAtSend || [];
+  if (held.length === 0) return '';
+  const rows = held.slice().sort((a,b)=> (a.category+a.name).localeCompare(b.category+b.name)).map(histRowHtml).join('');
+  return '<div class="hold-section"><div class="hold-head"><i class="ti ti-player-pause"></i>Was on hold at this time ('+held.length+')</div>' +
+    '<div class="hold-note">Not part of this order — recorded for reference.</div>' + rows + '</div>';
+}
+
 function histRowHtml(it){
   return '<div class="sum-row" style="border-left-color:var(--'+CAT_CLASS[it.category]+')">' +
     '<div class="sum-body"><span class="sum-name">'+escapeHtml(it.name)+'</span><span class="sum-cat">'+escapeHtml(it.category)+'</span>' +
-    (it.comment ? '<div class="sum-comment">"'+escapeHtml(it.comment)+'"</div>' : '') + '</div>' +
+    (it.comment ? '<div class="sum-comment">"'+escapeHtml(it.comment)+'"</div>' : '') +
+    (it.requestedAt ? '<div class="sum-time">Requested '+fmtTime(it.requestedAt)+'</div>' : '') + '</div>' +
     '<div class="sum-right">'+it.qty+' kg<span class="sum-by">'+escapeHtml(it.requestedBy)+'</span></div></div>';
 }
 
