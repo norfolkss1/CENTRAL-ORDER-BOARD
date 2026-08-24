@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>CENTRAL RECIPE BOOK</title>
+<script>
+  // Self-healing cache guard: if this page was served from a stale cache (common
+  // on mobile browsers) and doesn't match the version this deploy expects, force
+  // one genuine network reload with a cache-busting URL. Runs before anything else.
+  (function () {
+    var CURRENT_VERSION = "3";
+    var stored = localStorage.getItem("me-recipe-app-version");
+    if (stored !== CURRENT_VERSION) {
+      localStorage.setItem("me-recipe-app-version", CURRENT_VERSION);
+      if (stored !== null) {
+        location.replace(location.pathname + "?v=" + CURRENT_VERSION + "&t=" + Date.now());
+      }
+    }
+  })();
+</script>
+<link rel="stylesheet" href="style.v3.css">
+</head>
+<body>
+
+<!-- ============================== Connection status ============================== -->
+<div id="status-banner" class="hidden"></div>
+
+<!-- ============================== Access gate ============================== -->
+<div id="gate-screen">
+  <div class="center-screen">
+    <div class="panel-card">
+      <div class="brand-mark">CENTRAL RECIPE BOOK</div>
+      <div class="brand-sub">KITCHEN EDITION</div>
+
+      <input id="gate-name" class="field" placeholder="Your name" autocomplete="off">
+      <input id="gate-pin" class="field" placeholder="Access code" type="password" inputmode="numeric" autocomplete="off">
+      <div id="gate-error" class="error-text"></div>
+      <button id="gate-unlock-btn" class="btn btn-gold btn-block">Unlock</button>
+      <div class="hint-text">Ask your manager for the access code. Admin and kitchen-staff codes are different.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== Main app ============================== -->
+<div id="app-shell" class="hidden">
+  <button id="mobile-menu-btn" class="mobile-menu-btn">☰</button>
+  <div id="sidebar-scrim" class="sidebar-scrim"></div>
+
+  <div class="shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-mark">CENTRAL RECIPE BOOK</div>
+        <div class="brand-sub">KITCHEN EDITION</div>
+      </div>
+
+      <div class="sidebar-search">
+        <div class="sidebar-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7d838f" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="search-input" class="field" placeholder="Search recipes…">
+        </div>
+      </div>
+
+      <nav id="sidebar-nav" class="sidebar-nav"></nav>
+
+      <div class="sidebar-bottom">
+        <div class="who-row"><span id="who-am-i"></span></div>
+        <button id="admin-open-btn" class="sidebar-btn hidden">👑 Admin dashboard <span id="req-badge" class="badge-count hidden">0</span></button>
+        <button id="my-requests-btn" class="sidebar-btn">My requests</button>
+        <button id="lock-btn" class="sidebar-btn">⇦ Lock</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <div id="content-title" class="content-title">All Dishes</div>
+          <div id="result-count" class="content-sub hidden"></div>
+        </div>
+      </div>
+
+      <div id="app-body-content"></div>
+
+      <div class="legend-footer">
+        (D) Dairy · (G) Gluten · (S) Seafood · (Sh) Shellfish · (N) Nuts · (V) Vegetarian · (Vg) Vegan · (P) Pork · (Soy) Soy
+        <br>
+        Recipes marked <b>Draft</b> were reconstructed from photos/menu descriptions where the source prep book was incomplete, and still need kitchen confirmation.
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================== Recipe detail modal ============================== -->
+<div id="modal-backdrop" class="modal-backdrop hidden">
+  <div id="modal-card" class="modal-card"></div>
+</div>
+
+<!-- ============================== Full-size image lightbox ============================== -->
+<div id="lightbox-backdrop" class="lightbox-backdrop hidden">
+  <button class="modal-close" id="lightbox-close-btn">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-hint">Click the image to zoom in/out</div>
+</div>
+
+<!-- ============================== Costing calculator modal ============================== -->
+<div id="costing-backdrop" class="modal-backdrop hidden">
+  <div id="costing-card" class="modal-card"></div>
+</div>
+
+<!-- ============================== Admin / my-requests drawer ============================== -->
+<div id="drawer-backdrop" class="drawer-backdrop hidden">
+  <div class="drawer">
+    <div class="drawer-head">
+      <span class="drawer-title">Recipe management</span>
+      <button class="modal-close" style="position:static;" id="drawer-close-btn">✕</button>
+    </div>
+    <div id="drawer-content"></div>
+  </div>
+</div>
+
+<!-- Hidden print target -->
+<div id="print-area" class="print-only"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js?v=3"></script>
+<script src="data/seed-data.js?v=3"></script>
+<script src="data/costing-data.js?v=3"></script>
+<script src="app.v3.js"></script>
+<script>
+  document.getElementById("drawer-close-btn").addEventListener("click", () => {
+    document.getElementById("drawer-backdrop").classList.add("hidden");
+  });
+  document.getElementById("mobile-menu-btn").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebar-scrim").classList.toggle("open");
+  });
+  document.getElementById("sidebar-scrim").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebar-scrim").classList.remove("open");
+  });
+  document.getElementById("lightbox-close-btn").addEventListener("click", () => {
+    document.getElementById("lightbox-backdrop").classList.add("hidden");
+    document.getElementById("lightbox-img").classList.remove("zoomed");
+  });
+  document.getElementById("lightbox-backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "lightbox-backdrop") {
+      document.getElementById("lightbox-backdrop").classList.add("hidden");
+      document.getElementById("lightbox-img").classList.remove("zoomed");
+    }
+  });
+  document.getElementById("lightbox-img").addEventListener("click", (e) => {
+    const img = e.currentTarget;
+    if (img.classList.contains("zoomed")) {
+      img.classList.remove("zoomed");
+    } else {
+      const rect = img.getBoundingClientRect();
+      const originX = ((e.clientX - rect.left) / rect.width) * 100;
+      const originY = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${originX}% ${originY}%`;
+      img.classList.add("zoomed");
+    }
+  });
+  document.getElementById("costing-backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "costing-backdrop") closeCosting();
+  });
+</script>
+</body>
+</html>
