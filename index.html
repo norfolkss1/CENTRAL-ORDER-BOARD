@@ -2,724 +2,153 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kitchen order board</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<style>
-  :root{
-    --bg:#F2F4F0; --panel:#FFFFFF; --ink:#12190F; --ink-soft:#495449; --line:#C6D0C4;
-    --veg:#2E5C0C; --veg-bg:#D7EEC0; --dry:#8A6A00; --dry-bg:#FBEA8E; --pro:#9C2B12; --pro-bg:#F6C7BB;
-    --dai:#0A3F72; --dai-bg:#CCE2F6; --bre:#5E3411; --bre-bg:#E3C8A0; --pas:#7A1F44; --pas-bg:#F6D1E2;
-    --bqt:#5B2A86; --bqt-bg:#E4D3F5;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  body,html{margin:0;padding:0;background:var(--bg)}
-  .board-root{font-family:'Space Grotesk',sans-serif;color:var(--ink);max-width:1100px;margin:0 auto;padding:0.9rem 12px 2rem;font-size:15px}
-  .status-bar{font-size:12px;color:var(--ink-soft);font-weight:500;display:flex;align-items:center;gap:5px;padding:0 2px 8px}
-  .status-dot{width:7px;height:7px;border-radius:50%;background:#3E8F1C}
-  .status-dot.off{background:#C4341F}
-  .topbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;padding:0 2px}
-  .search-wrap{position:relative;flex:1 1 100%;min-width:180px;order:1}
-  .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-soft);font-size:17px}
-  input[type=text]{width:100%;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:15px;padding:11px 12px 11px 36px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink)}
-  input[type=text]:focus{outline:none;border-color:var(--ink)}
-  input[type=text]::placeholder{color:var(--ink-soft);font-weight:400}
-  .row2{display:flex;gap:8px;flex:1 1 100%;order:2;align-items:center;flex-wrap:wrap}
-  .name-field{flex:1;min-width:100px}
-  .name-field input{width:100%;font-size:13px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif;font-weight:500}
-  .name-field.needs-name input{border-color:var(--pro)}
-  .icon-btn{font-size:12px;font-weight:600;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:4px}
-  .icon-btn:hover{border-color:var(--ink)}
-  .icon-btn.admin-on{color:#fff;background:var(--dai);border-color:var(--dai)}
-  .sq-btn{width:32px;height:32px;flex-shrink:0;padding:0;justify-content:center;font-size:15px}
-
-  .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-  .gate-card{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:28px 24px;max-width:340px;width:100%;text-align:center}
-  .gate-card i{font-size:30px;color:var(--ink-soft)}
-  .gate-card h2{font-size:17px;font-weight:700;margin:10px 0 4px}
-  .gate-card p{font-size:13px;color:var(--ink-soft);margin:0 0 16px;font-weight:500}
-  .gate-card input{text-align:center;letter-spacing:2px;margin-bottom:12px}
-  .gate-card button{width:100%;padding:12px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer}
-  .gate-error{color:var(--pro);font-size:12px;font-weight:600;margin:-6px 0 12px;display:none}
-  .jumpchips{display:flex;gap:6px;overflow-x:auto;padding:0 2px 10px 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .jumpchips::-webkit-scrollbar{display:none}
-  .chip{flex:0 0 auto;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer;white-space:nowrap}
-  .chip.active{color:#fff;background:var(--ink);border-color:var(--ink)}
-  .chip.veg{border-color:var(--veg);color:var(--veg)} .chip.dry{border-color:var(--dry);color:var(--dry)}
-  .chip.pro{border-color:var(--pro);color:var(--pro)} .chip.dai{border-color:var(--dai);color:var(--dai)}
-  .chip.bre{border-color:var(--bre);color:var(--bre)} .chip.pas{border-color:var(--pas);color:var(--pas)}
-  .chip.bqt{border-color:var(--bqt);color:var(--bqt)}
-  .chip.veg.active{background:var(--veg);border-color:var(--veg)} .chip.dry.active{background:var(--dry);border-color:var(--dry)}
-  .chip.pro.active{background:var(--pro);border-color:var(--pro)} .chip.dai.active{background:var(--dai);border-color:var(--dai)}
-  .chip.bre.active{background:var(--bre);border-color:var(--bre)} .chip.pas.active{background:var(--pas);border-color:var(--pas)}
-  .chip.bqt.active{background:var(--bqt);border-color:var(--bqt)}
-  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-  .col{flex:0 0 88vw;scroll-snap-align:start;border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;background:var(--panel)}
-  .col.veg{background:var(--veg-bg);border-color:var(--veg)} .col.veg .col-title{color:var(--veg)}
-  .col.dry{background:var(--dry-bg);border-color:var(--dry)} .col.dry .col-title{color:var(--dry)}
-  .col.pro{background:var(--pro-bg);border-color:var(--pro)} .col.pro .col-title{color:var(--pro)}
-  .col.dai{background:var(--dai-bg);border-color:var(--dai)} .col.dai .col-title{color:var(--dai)}
-  .col.bre{background:var(--bre-bg);border-color:var(--bre)} .col.bre .col-title{color:var(--bre)}
-  .col.pas{background:var(--pas-bg);border-color:var(--pas)} .col.pas .col-title{color:var(--pas)}
-  .col.bqt{background:var(--bqt-bg);border-color:var(--bqt)} .col.bqt .col-title{color:var(--bqt)}
-  .col-head{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px 2px;border-bottom:1.5px solid rgba(0,0,0,0.12);margin-bottom:8px}
-  .col-title{font-size:15px;font-weight:700}
-  .col-count{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--ink);background:rgba(255,255,255,0.6);border-radius:20px;padding:3px 9px}
-  .items{display:flex;flex-direction:column;gap:7px}
-  .item{border:1.5px solid rgba(0,0,0,0.14);border-left:5px solid rgba(0,0,0,0.14);border-radius:9px;padding:9px 11px;background:var(--panel)}
-  .col.veg .item.active{border-left-color:var(--veg)} .col.dry .item.active{border-left-color:var(--dry)}
-  .col.pro .item.active{border-left-color:var(--pro)} .col.dai .item.active{border-left-color:var(--dai)}
-  .col.bre .item.active{border-left-color:var(--bre)} .col.pas .item.active{border-left-color:var(--pas)}
-  .col.bqt .item.active{border-left-color:var(--bqt)}
-  .item.active{box-shadow:0 1px 3px rgba(0,0,0,0.08)}
-  .item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .item-name{font-size:14px;font-weight:600;line-height:1.35}
-  .item-del{background:none;border:none;color:var(--pro);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0}
-  .stepper{display:flex;align-items:center;gap:8px;flex-shrink:0}
-  .stepper button{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-size:18px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .stepper button:active{background:var(--line)}
-  .qty-readout{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;min-width:26px;text-align:center}
-  .item-meta{margin-top:5px;font-size:11px;font-weight:600;color:var(--ink-soft);display:flex;justify-content:space-between}
-  .item-time{margin-top:3px;font-size:10px;font-weight:500;color:var(--ink-soft)}
-  .item-comment{margin-top:7px}
-  .item-comment input{width:100%;font-size:12px;font-weight:400;padding:7px 9px;border:1.5px dashed var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif}
-  .item-row-top{display:flex;align-items:flex-start;gap:6px}
-  .add-item-btn{margin-top:9px;font-size:13px;font-weight:600;color:var(--ink-soft);background:rgba(255,255,255,0.5);border:1.5px dashed rgba(0,0,0,0.2);border-radius:9px;padding:10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:center}
-  .add-form{display:flex;gap:6px;margin-top:9px}
-  .add-form input{flex:1;font-size:13px;padding:9px}
-  .add-form button{font-size:13px;font-weight:600;padding:9px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--ink);color:var(--panel);cursor:pointer;font-family:'Space Grotesk',sans-serif}
-  .empty-state{font-size:12px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px 4px}
-  .no-results,.loading{font-size:13px;font-weight:500;color:var(--ink-soft);padding:24px;text-align:center}
-
-  .overlay{position:fixed;inset:0;background:rgba(10,15,10,0.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
-  .sheet{background:var(--panel);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px;transition:none}
-  .sheet.fullscreen{max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0}
-  .sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;position:sticky;top:-16px;background:var(--panel);padding-top:4px;z-index:2}
-  .sheet-title{font-size:17px;font-weight:700;flex:1}
-  .sheet-close,.sheet-back,.sheet-fs{background:none;border:1.5px solid var(--line);border-radius:8px;font-size:16px;color:var(--ink);cursor:pointer;padding:6px 9px;display:flex;align-items:center}
-  .sheet-close{border:none;font-size:22px;color:var(--ink-soft);padding:2px 6px}
-  .sum-cat-head{font-size:13px;font-weight:700;margin:14px 0 8px;padding:7px 10px;border-radius:7px}
-  .sum-cat-head:first-child{margin-top:0}
-  .sum-row{display:flex;align-items:center;gap:10px;border:1.5px solid rgba(0,0,0,0.12);border-left:5px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px}
-  .sum-row.checked{opacity:0.55}
-  .sum-row.checked .sum-name{text-decoration:line-through}
-  .sum-check{flex-shrink:0;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink)}
-  .sum-check.on{background:var(--veg);border-color:var(--veg);color:#fff}
-  .sum-body{flex:1;min-width:0}
-  .sum-name{font-size:13px;font-weight:600}
-  .sum-cat{font-size:10px;font-weight:600;color:var(--ink-soft);display:block;margin-top:2px}
-  .sum-comment{font-size:11px;font-style:italic;color:var(--ink-soft);margin-top:3px}
-  .sum-right{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;flex-shrink:0}
-  .sum-by{font-size:10px;color:var(--ink-soft);font-family:'Space Grotesk',sans-serif;font-weight:600;display:block;margin-top:2px}
-  .sum-total{font-size:12px;font-weight:600;color:var(--ink-soft);margin:4px 2px 12px}
-  .sum-time{font-size:10px;font-weight:500;color:var(--ink-soft);margin-top:3px}
-  .move-btn{flex-shrink:0;width:30px;height:30px;border-radius:7px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
-  .move-btn:hover{border-color:var(--ink)}
-  .hold-section{margin-top:20px;padding-top:14px;border-top:2px dashed var(--line)}
-  .hold-head{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:4px}
-  .hold-note{font-size:11px;font-weight:500;color:var(--ink-soft);margin-bottom:10px}
-  .sum-row.held{background:#F5F2E4;border-style:dashed}
-  .send-btn{width:100%;padding:13px;border-radius:9px;border:none;background:var(--ink);color:var(--panel);font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;margin-top:8px}
-  .send-btn:disabled{opacity:0.4;cursor:not-allowed}
-  .hist-list-row{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--line);border-radius:10px;padding:12px 13px;margin-bottom:8px;cursor:pointer;background:var(--panel)}
-  .hist-list-row:hover{border-color:var(--ink)}
-  .hist-date{font-size:14px;font-weight:700}
-  .hist-meta{font-size:11px;font-weight:600;color:var(--ink-soft);margin-top:2px}
-  .hist-empty{font-size:13px;font-weight:500;color:var(--ink-soft);text-align:center;padding:20px}
-
-  @media (min-width:720px){
-    .board-root{font-size:14px}
-    .topbar{flex-wrap:nowrap}
-    .search-wrap{flex:1;order:0}
-    .row2{flex:0 0 auto;order:0;width:auto}
-    .name-field{flex:0 0 130px}
-    .col{flex:0 0 240px}
-    .stepper button{width:28px;height:28px;font-size:15px}
-  }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>CENTRAL RECIPE BOOK</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="gate" id="access-gate" style="display:none">
-  <div class="gate-card">
-    <i class="ti ti-lock"></i>
-    <h2>Kitchen order board</h2>
-    <p>Enter the team access code to view and use the board.</p>
-    <input type="password" id="gate-pin" placeholder="Access code" inputmode="numeric" autocomplete="off">
-    <div class="gate-error" id="gate-error">Incorrect code — try again.</div>
-    <button type="button" id="gate-submit">Unlock</button>
-  </div>
-</div>
-<div class="board-root" id="board-root" style="display:none">
-  <div class="status-bar"><span class="status-dot" id="status-dot"></span><span id="status-text">Connecting…</span></div>
-  <div class="topbar">
-    <div class="search-wrap">
-      <i class="ti ti-search"></i>
-      <input type="text" id="search" placeholder="Search items" autocomplete="off">
-    </div>
-    <div class="row2">
-      <div class="name-field" id="name-field"><input type="text" id="display-name" placeholder="Your name (required to order)" autocomplete="off"></div>
-      <button class="icon-btn" id="history-btn" type="button"><i class="ti ti-history"></i>History</button>
-      <button class="icon-btn" id="summary-btn" type="button"><i class="ti ti-clipboard-list"></i>Summary</button>
-      <button class="icon-btn" id="admin-btn" type="button"><i class="ti ti-lock"></i>Admin</button>
+
+<!-- ============================== Connection status ============================== -->
+<div id="status-banner" class="hidden"></div>
+
+<!-- ============================== Access gate ============================== -->
+<div id="gate-screen">
+  <div class="center-screen">
+    <div class="panel-card">
+      <div class="brand-mark">CENTRAL RECIPE BOOK</div>
+      <div class="brand-sub">KITCHEN EDITION</div>
+
+      <input id="gate-name" class="field" placeholder="Your name" autocomplete="off">
+      <input id="gate-pin" class="field" placeholder="Access code" type="password" inputmode="numeric" autocomplete="off">
+      <div id="gate-error" class="error-text"></div>
+      <button id="gate-unlock-btn" class="btn btn-gold btn-block">Unlock</button>
+      <div class="hint-text">Ask your manager for the access code. Admin and kitchen-staff codes are different.</div>
     </div>
   </div>
-  <div class="jumpchips" id="jumpchips"></div>
-  <div id="board" class="board"><div class="loading">Loading board…</div></div>
 </div>
-<div id="modal-root"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, doc, getDoc, onSnapshot, updateDoc, setDoc, deleteField, arrayUnion,
-  collection, addDoc, getDocs, query, orderBy, limit
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<!-- ============================== Main app ============================== -->
+<div id="app-shell" class="hidden">
+  <button id="mobile-menu-btn" class="mobile-menu-btn">☰</button>
+  <div id="sidebar-scrim" class="sidebar-scrim"></div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBqqcXUkCrank_UNwdSwK8zsBEsQP7uIp4",
-  authDomain: "central-order-board.firebaseapp.com",
-  projectId: "central-order-board",
-  storageBucket: "central-order-board.firebasestorage.app",
-  messagingSenderId: "131290373437",
-  appId: "1:131290373437:web:a732f99e5d22da62113954"
-};
+  <div class="shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-mark">CENTRAL RECIPE BOOK</div>
+        <div class="brand-sub">KITCHEN EDITION</div>
+      </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const stateRef = doc(db, "board_state", "current");
-const ordersColl = collection(db, "order_history");
+      <div class="sidebar-search">
+        <div class="sidebar-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7d838f" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="search-input" class="field" placeholder="Search recipes…">
+        </div>
+      </div>
 
-const CATALOG = {"Vegetables & Fruits": ["Apple Green", "Asparagus", "Avocado", "Banana", "Basil", "Beetroot", "Berries", "Broccolini", "Capsicum", "Carrot", "Cauliflower", "Celery", "Cherry Tomato", "Chervil", "Chili", "Chives", "Corriander", "Cucumber", "Dill", "Dragon Fruit", "Eggplant", "Fennel", "French Beans", "Garlic - Peel/Whole", "Kale", "Kiwi", "Leek", "Lemon", "Lettuce Radichio", "Lettuce Romain", "Letuce Iceberg", "Lime", "Micross", "Mint", "Mushroom Buton", "Onion: Red/White/Brown", "Orange", "Padron Peppers", "Papaya Green", "Parsley", "Passion Fruit", "Pineapple", "Plum", "Pomegranate", "Potato Finger", "Potato Local", "Purple Potato", "Red Cabbage", "Rock Melon", "Rocket Baby", "Rosemary", "Snow Peas", "Spinach", "Spring Onion", "Strawberry", "Sweet Potato", "Taragon", "Thyme", "Tomato Local", "Watermelon", "Zuchini Green"], "Dry Products": ["Agar-Agar", "Anchovie Black", "Apple Cider Vinegar", "BBQ Sauce", "Baked Beans", "Baking Powder", "Balsamic", "Bay Leaf", "Black Olive", "Black Pepper Whole", "Black Quinoa", "Bran Flakes", "Chia Seeds", "Chick Pea", "Chilli Jam", "Choco Pop", "Cinamon Powder", "Coconut Water", "Condenced Milk", "Corn Flakes", "Corn Starch", "Dry Apricot", "Dry Crunberry", "Egg", "Falafel Frozen", "Fish Sauce", "Flax Seed", "Foul Madames", "French Fries", "Frying Oil", "Gherkin", "Green Olives", "Green Peas Frozen", "Hazelnut", "Honey", "Horseradish Sauce", "Icing Sugar", "Ketchup", "Macaroni", "Maple Syrup", "Mayonaise", "Mustard", "Nutella", "Oil Corn", "Olive Oil", "Panko Breadcrumb", "Paprika", "Peanut", "Peanut Butter Crunchy", "Pecans", "Penne", "Picquilo Peppers", "Pista Stick/whole", "Pomegranat Molases", "Prunes", "Pumpkin Seed", "Red Vinegar", "Rice Vinegar", "Saffron", "Salt Fine", "Salt Maldon", "Sambal Oliek", "Soy Sauce", "Spaghetti", "Squid Ink", "Sushi Rice", "Sweet Potato Fries", "T45 Flour", "Tagliatelle", "Tahina", "Tempura Mix", "Tomato Paste", "Tomato Peeled", "Truffle Oil", "Walnut", "White Vinegar", "Whole Oats", "Worcesteshire Sauce"], "Protein": ["Beef Cold Cuts", "Beef Croqutas", "Beef Cuberoll Prime", "Beef Sausage", "Beef Trimmings", "Cheese Croquetas", "Chicken Breast W/wing", "Chicken Croquetas", "Chicken Sausage", "Chicken Whole", "Cod Fillet", "Lamb Rack", "Salmon Whole", "Shrimp 16/20", "Shrimp U15 With Head", "Smocked Mackrel", "Smocked Salmon", "Squid", "Turkey Bacon"], "Dairy": ["Arabic Cheese", "Brie Cheese", "Burata", "Butter", "Cheddar Cheese", "Cream", "Cream Cheese", "Feta", "Labneh", "Manchego Cheese", "Milk Long Life", "Parmesan", "Provolone", "Ricotta", "Yoghurt"], "Bread": ["Arabic Bread", "Bagel", "Bocadillo Bread", "Brioche", "Burger Bun", "Crystal Bread", "English Muffin", "Grisini", "Lavash", "Slider Bun", "Sourdough", "White Sourdough"], "Pastry": ["Acai", "Arabic Sweet", "Bamboo Leaves", "Banana Chips", "Chia", "Chocolate", "Coco Jalila Chocolate", "Cocoa Powder", "Dates", "Flour", "Frozen Berries", "Fruit Puree", "ME Macaroones", "Oats", "Pinacolada Icecream", "Pistachio Spread", "Sago", "Sugar", "Whipping Cream"], "BQT/ MIX ORDER": []};
-const CAT_CLASS = { "Vegetables & Fruits": "veg", "Dry Products": "dry", "Protein": "pro", "Dairy": "dai", "Bread": "bre", "Pastry": "pas", "BQT/ MIX ORDER": "bqt" };
-const ADMIN_PIN = "2580"; // change this before sharing the app
-const USER_PIN = "4671"; // change this too — anyone with this code can use the board
+      <nav id="sidebar-nav" class="sidebar-nav"></nav>
 
-function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
-function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function fmtTime(ts){
-  if (!ts) return '';
-  return new Date(ts).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-}
+      <div class="sidebar-bottom">
+        <div class="who-row"><span id="who-am-i"></span></div>
+        <button id="admin-open-btn" class="sidebar-btn hidden">👑 Admin dashboard <span id="req-badge" class="badge-count hidden">0</span></button>
+        <button id="my-requests-btn" class="sidebar-btn">My requests</button>
+        <button id="lock-btn" class="sidebar-btn">⇦ Lock</button>
+      </div>
+    </aside>
 
-let customItems = [];
-let requests = {};
-let deletedItems = [];
-let checkedOrder = {};
-let onHold = {};
-let displayName = localStorage.getItem('kb-display-name') || '';
-let isAdmin = localStorage.getItem('kb-is-admin') === 'true';
-let searchTerm = '';
-let summaryFilter = 'All';
-let commentTimers = {};
-let modalFullscreen = false;
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <div id="content-title" class="content-title">All Dishes</div>
+          <div id="result-count" class="content-sub hidden"></div>
+        </div>
+      </div>
 
-// history state
-let historyCache = [];
-let histOpenIdx = null;   // null = list view, otherwise index into historyCache
-let histDetailFilter = 'All';
-let histDetailTerm = '';
+      <div id="app-body-content"></div>
 
-document.getElementById('display-name').value = displayName;
-updateAdminBtn();
-renderChips();
+      <div class="legend-footer">
+        (D) Dairy · (G) Gluten · (S) Seafood · (Sh) Shellfish · (N) Nuts · (V) Vegetarian · (Vg) Vegan · (P) Pork · (Soy) Soy
+        <br>
+        Recipes marked <b>Draft</b> were reconstructed from photos/menu descriptions where the source prep book was incomplete, and still need kitchen confirmation.
+      </div>
+    </main>
+  </div>
+</div>
 
-(async () => {
-  try{
-    const snap = await getDoc(stateRef);
-    if (!snap.exists()){
-      await setDoc(stateRef, { requests: {}, customItems: [], deletedItems: [], checkedOrder: {}, onHold: {} });
-    }
-  } catch(e){ console.error('Init error', e); }
-})();
+<!-- ============================== Recipe detail modal ============================== -->
+<div id="modal-backdrop" class="modal-backdrop hidden">
+  <div id="modal-card" class="modal-card"></div>
+</div>
 
-onSnapshot(stateRef, (snap) => {
-  const data = snap.data() || {};
-  requests = data.requests || {};
-  customItems = data.customItems || [];
-  deletedItems = data.deletedItems || [];
-  checkedOrder = data.checkedOrder || {};
-  onHold = data.onHold || {};
-  setStatus(true);
-  render();
-}, (err) => { console.error(err); setStatus(false); });
+<!-- ============================== Full-size image lightbox ============================== -->
+<div id="lightbox-backdrop" class="lightbox-backdrop hidden">
+  <button class="modal-close" id="lightbox-close-btn">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-hint">Click the image to zoom in/out</div>
+</div>
 
-function setStatus(ok){
-  document.getElementById('status-dot').classList.toggle('off', !ok);
-  document.getElementById('status-text').textContent = ok ? 'Live' : 'Connection lost — retrying';
-}
+<!-- ============================== Costing calculator modal ============================== -->
+<div id="costing-backdrop" class="modal-backdrop hidden">
+  <div id="costing-card" class="modal-card"></div>
+</div>
 
-function buildItemList(){
-  const list = [];
-  for (const cat of Object.keys(CATALOG)){
-    for (const name of CATALOG[cat]) list.push({ id: cat.slice(0,3).toLowerCase()+'-'+slug(name), name, category: cat });
-  }
-  for (const it of customItems) list.push({ id: it.id, name: it.name, category: it.category });
-  return list.filter(it => !deletedItems.includes(it.id));
-}
+<!-- ============================== Admin / my-requests drawer ============================== -->
+<div id="drawer-backdrop" class="drawer-backdrop hidden">
+  <div class="drawer">
+    <div class="drawer-head">
+      <span class="drawer-title">Recipe management</span>
+      <button class="modal-close" style="position:static;" id="drawer-close-btn">✕</button>
+    </div>
+    <div id="drawer-content"></div>
+  </div>
+</div>
 
-function requireName(){
-  const v = (displayName || '').trim();
-  if (v) return true;
-  document.getElementById('name-field').classList.add('needs-name');
-  document.getElementById('display-name').focus();
-  alert('Please enter your name first — we need to know who is requesting each item.');
-  return false;
-}
+<!-- Hidden print target -->
+<div id="print-area" class="print-only"></div>
 
-function setQty(id, delta){
-  if (!requireName()) return;
-  const current = requests[id]?.qty || 0;
-  const next = Math.max(0, current + delta);
-  const field = 'requests.' + id;
-  if (next === 0){
-    delete requests[id];
-    updateDoc(stateRef, { [field]: deleteField() }).catch(console.error);
-  } else {
-    const val = {
-      qty: next, unit: 'kg',
-      requestedBy: requests[id]?.requestedBy || displayName || 'Unnamed',
-      requestedAt: requests[id]?.requestedAt || Date.now(),
-      updatedAt: Date.now(),
-      updatedBy: displayName || 'Unnamed',
-      comment: requests[id]?.comment || ''
-    };
-    requests[id] = val;
-    updateDoc(stateRef, { [field]: val }).catch(console.error);
-  }
-  render();
-}
-
-function setComment(id, text){
-  if (!requests[id]) return;
-  requests[id].comment = text;
-  clearTimeout(commentTimers[id]);
-  commentTimers[id] = setTimeout(() => {
-    updateDoc(stateRef, { ['requests.' + id + '.comment']: text }).catch(console.error);
-  }, 400);
-}
-
-function addCustomItem(category, name){
-  name = name.trim();
-  if (!name) return;
-  const id = 'custom-'+slug(category)+'-'+slug(name)+'-'+Date.now().toString(36);
-  const item = { id, name, category };
-  customItems.push(item);
-  updateDoc(stateRef, { customItems: arrayUnion(item) }).catch(console.error);
-  render();
-}
-
-function deleteItem(id){
-  if (!isAdmin) return;
-  if (!confirm('Remove this item from the list for everyone? This cannot be undone.')) return;
-  deletedItems.push(id);
-  const updates = { deletedItems: arrayUnion(id) };
-  if (requests[id]){ delete requests[id]; updates['requests.' + id] = deleteField(); }
-  updateDoc(stateRef, updates).catch(console.error);
-  render();
-}
-
-// Move an item between the main summary list and the on-hold list (admin only).
-// All original request info (who asked, when) travels with it and is never rewritten.
-function moveToHold(id){
-  if (!isAdmin) return;
-  const r = requests[id];
-  if (!r) return;
-  const held = { ...r, heldAt: Date.now(), heldBy: displayName || 'Admin' };
-  onHold[id] = held;
-  delete requests[id];
-  delete checkedOrder[id];
-  updateDoc(stateRef, {
-    ['onHold.' + id]: held,
-    ['requests.' + id]: deleteField(),
-    ['checkedOrder.' + id]: deleteField()
-  }).catch(console.error);
-  render();
-}
-function moveToOrder(id){
-  if (!isAdmin) return;
-  const h = onHold[id];
-  if (!h) return;
-  const { heldAt, heldBy, ...rest } = h;
-  requests[id] = rest;
-  delete onHold[id];
-  updateDoc(stateRef, {
-    ['requests.' + id]: rest,
-    ['onHold.' + id]: deleteField()
-  }).catch(console.error);
-  render();
-}
-
-function toggleChecked(id){  const next = !checkedOrder[id];
-  checkedOrder[id] = next;
-  updateDoc(stateRef, { ['checkedOrder.' + id]: next }).catch(console.error);
-}
-
-function saveName(v){
-  displayName = v;
-  localStorage.setItem('kb-display-name', v);
-  if (v.trim()) document.getElementById('name-field').classList.remove('needs-name');
-}
-function updateAdminBtn(){
-  const btn = document.getElementById('admin-btn');
-  btn.classList.toggle('admin-on', isAdmin);
-  btn.innerHTML = isAdmin ? '<i class="ti ti-lock-open"></i>Admin' : '<i class="ti ti-lock"></i>Admin';
-}
-function handleAdminClick(){
-  if (isAdmin){
-    if (confirm('Log out of admin mode on this device?')){ isAdmin = false; localStorage.setItem('kb-is-admin','false'); updateAdminBtn(); render(); }
-    return;
-  }
-  const pin = prompt('Enter admin PIN');
-  if (pin === null) return;
-  if (pin === ADMIN_PIN){ isAdmin = true; localStorage.setItem('kb-is-admin','true'); updateAdminBtn(); render(); }
-  else alert('Incorrect PIN.');
-}
-
-async function sendOrder(){
-  if (!isAdmin){ alert('Only admins can mark an order as sent.'); return; }
-  const activeIds = Object.keys(requests);
-  if (activeIds.length === 0){ alert('The board has no requested items yet.'); return; }
-  const holdCount = Object.keys(onHold).length;
-  if (!confirm('Mark this order as sent? It will be saved to history and the board cleared for everyone.' + (holdCount ? '\n\n' + holdCount + ' on-hold item(s) will stay on hold and carry over.' : ''))) return;
-  const itemsById = {}; for (const it of buildItemList()) itemsById[it.id] = it;
-  const packItem = (id, src) => ({
-    name: itemsById[id]?.name || id,
-    category: itemsById[id]?.category || 'Unknown',
-    qty: src[id].qty,
-    requestedBy: src[id].requestedBy,
-    requestedAt: src[id].requestedAt || src[id].updatedAt || null,
-    comment: src[id].comment || ''
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data/seed-data.js"></script>
+<script src="data/costing-data.js"></script>
+<script src="app.js"></script>
+<script>
+  document.getElementById("drawer-close-btn").addEventListener("click", () => {
+    document.getElementById("drawer-backdrop").classList.add("hidden");
   });
-  const entry = {
-    clearedAt: Date.now(),
-    clearedBy: displayName || 'Admin',
-    items: activeIds.map(id => packItem(id, requests)),
-    // snapshot of what was still on hold at the time this order went out
-    onHoldAtSend: Object.keys(onHold).map(id => ({ ...packItem(id, onHold), heldBy: onHold[id].heldBy || null, heldAt: onHold[id].heldAt || null }))
-  };
-  try{
-    await addDoc(ordersColl, entry);
-    await updateDoc(stateRef, { requests: {}, checkedOrder: {} });
-    closeModal();
-  } catch(e){ console.error(e); alert('Could not send order — check your connection.'); }
-}
-
-function renderChips(){
-  const wrap = document.getElementById('jumpchips');
-  wrap.innerHTML = '';
-  for (const cat of Object.keys(CATALOG)){
-    const chip = document.createElement('button');
-    chip.type = 'button'; chip.className = 'chip ' + CAT_CLASS[cat]; chip.textContent = cat;
-    chip.onclick = () => { const el = document.getElementById('col-' + slug(cat)); if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' }); };
-    wrap.appendChild(chip);
-  }
-}
-
-function render(){
-  // Remember which comment box (if any) is focused so re-renders (triggered by live
-  // updates from other devices) don't kick the typing user out of their input mid-word.
-  const active = document.activeElement;
-  const focusedCommentId = (active && active.dataset && active.dataset.commentId) ? active.dataset.commentId : null;
-  const selStart = focusedCommentId ? active.selectionStart : null;
-  const selEnd = focusedCommentId ? active.selectionEnd : null;
-
-  const boardEl = document.getElementById('board');
-  const items = buildItemList();
-  const term = searchTerm.trim().toLowerCase();
-  const byCategory = {}; for (const cat of Object.keys(CATALOG)) byCategory[cat] = [];
-  for (const it of items){ if (term && !it.name.toLowerCase().includes(term)) continue; byCategory[it.category].push(it); }
-  for (const cat in byCategory) byCategory[cat].sort((a,b)=>a.name.localeCompare(b.name));
-
-  const anyResults = Object.values(byCategory).some(arr => arr.length > 0);
-  if (!anyResults && term){ boardEl.innerHTML = '<div class="no-results">No items match "'+escapeHtml(searchTerm)+'".</div>'; return; }
-
-  boardEl.innerHTML = '';
-  for (const cat of Object.keys(CATALOG)){
-    const arr = byCategory[cat];
-    if (term && arr.length === 0) continue;
-    const col = document.createElement('div');
-    col.className = 'col ' + CAT_CLASS[cat]; col.id = 'col-' + slug(cat);
-    const requestedCount = arr.filter(it => requests[it.id]).length;
-    col.innerHTML = '<div class="col-head"><span class="col-title">'+cat+'</span><span class="col-count">'+requestedCount+'/'+arr.length+'</span></div><div class="items" id="items-'+slug(cat)+'"></div>';
-    boardEl.appendChild(col);
-    const itemsEl = col.querySelector('.items');
-    if (arr.length === 0){ itemsEl.innerHTML = '<div class="empty-state">No items yet</div>'; }
-    for (const it of arr){
-      const req = requests[it.id];
-      const row = document.createElement('div');
-      row.className = 'item' + (req ? ' active' : '');
-      row.innerHTML =
-        '<div class="item-row-top"><span class="item-name" style="flex:1">'+escapeHtml(it.name)+'</span>' +
-        (isAdmin ? '<button class="item-del" type="button" title="Delete item" data-act="del"><i class="ti ti-trash"></i></button>' : '') +
-        '</div>' +
-        '<div class="item-top" style="margin-top:4px"><span></span><span class="stepper"><button type="button" aria-label="Decrease" data-act="dec">−</button><span class="qty-readout">'+(req ? req.qty : 0)+'</span><button type="button" aria-label="Increase" data-act="inc">+</button></span></div>' +
-        (req ? '<div class="item-meta"><span>'+escapeHtml(req.requestedBy)+'</span><span>'+req.qty+' kg</span></div>' : '') +
-        (req ? '<div class="item-time"><i class="ti ti-clock" style="vertical-align:-1px;margin-right:3px"></i>'+fmtTime(req.requestedAt || req.updatedAt)+'</div>' : '') +
-        (req ? '<div class="item-comment"><input type="text" placeholder="Add a note (optional)" value="'+escapeHtml(req.comment||'')+'" data-act="comment" data-comment-id="'+it.id+'"/></div>' : '');
-      row.querySelector('[data-act="dec"]').onclick = () => setQty(it.id, -1);
-      row.querySelector('[data-act="inc"]').onclick = () => setQty(it.id, 1);
-      const delBtn = row.querySelector('[data-act="del"]');
-      if (delBtn) delBtn.onclick = () => deleteItem(it.id);
-      const commentInput = row.querySelector('[data-act="comment"]');
-      if (commentInput) commentInput.addEventListener('input', (e) => setComment(it.id, e.target.value));
-      itemsEl.appendChild(row);
+  document.getElementById("mobile-menu-btn").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sidebar-scrim").classList.toggle("open");
+  });
+  document.getElementById("sidebar-scrim").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebar-scrim").classList.remove("open");
+  });
+  document.getElementById("lightbox-close-btn").addEventListener("click", () => {
+    document.getElementById("lightbox-backdrop").classList.add("hidden");
+    document.getElementById("lightbox-img").classList.remove("zoomed");
+  });
+  document.getElementById("lightbox-backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "lightbox-backdrop") {
+      document.getElementById("lightbox-backdrop").classList.add("hidden");
+      document.getElementById("lightbox-img").classList.remove("zoomed");
     }
-    if (!term){
-      const addBtn = document.createElement('button');
-      addBtn.className = 'add-item-btn'; addBtn.type = 'button';
-      addBtn.innerHTML = '<i class="ti ti-plus" style="vertical-align:-2px;margin-right:4px"></i>Add item';
-      addBtn.onclick = () => {
-        addBtn.style.display = 'none';
-        const form = document.createElement('div'); form.className = 'add-form';
-        form.innerHTML = '<input type="text" placeholder="Item name" /><button type="button">Add</button>';
-        const input = form.querySelector('input');
-        const submit = () => addCustomItem(cat, input.value);
-        form.querySelector('button').onclick = submit;
-        input.onkeydown = (e) => { if (e.key === 'Enter') submit(); };
-        col.appendChild(form); input.focus();
-      };
-      col.appendChild(addBtn);
-    }
-  }
-
-  if (focusedCommentId){
-    const el = document.querySelector('[data-comment-id="'+focusedCommentId+'"]');
-    if (el){ el.focus(); if (selStart !== null) el.setSelectionRange(selStart, selEnd); }
-  }
-}
-
-function openModal(html){
-  modalFullscreen = false;
-  document.getElementById('modal-root').innerHTML = '<div class="overlay" id="overlay"><div class="sheet" id="sheet">' + html + '</div></div>';
-  document.getElementById('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeModal(); });
-}
-function closeModal(){ document.getElementById('modal-root').innerHTML = ''; modalFullscreen = false; }
-window.closeModal = closeModal;
-
-function fsToggleHtml(){
-  return '<button class="sheet-fs" id="fs-toggle" type="button" title="Toggle full screen"><i class="ti ti-'+(modalFullscreen?'arrows-minimize':'arrows-maximize')+'"></i></button>';
-}
-function bindFsToggle(onToggle){
-  const btn = document.getElementById('fs-toggle');
-  if (!btn) return;
-  btn.onclick = () => {
-    modalFullscreen = !modalFullscreen;
-    document.getElementById('sheet').classList.toggle('fullscreen', modalFullscreen);
-    onToggle();
-  };
-}
-
-// ---- Order summary: open to everyone, grouped by category, tick-off checklist, fullscreen ----
-function renderSummary(){
-  const itemsById = {}; for (const it of buildItemList()) itemsById[it.id] = it;
-  const all = Object.keys(requests).map(id => ({ id, ...itemsById[id], ...requests[id] })).filter(r => r.name);
-  const filtered = summaryFilter === 'All' ? all : all.filter(r => r.category === summaryFilter);
-
-  const chips = ['All', ...Object.keys(CATALOG)].map(c =>
-    '<button type="button" class="chip '+(c!=='All'?CAT_CLASS[c]:'')+' '+(summaryFilter===c?'active':'')+'" data-filter="'+escapeHtml(c)+'">'+c+'</button>'
-  ).join('');
-
-  let rowsHtml;
-  if (filtered.length === 0){
-    rowsHtml = '<div class="sum-empty">No requested items in this category.</div>';
-  } else if (summaryFilter === 'All'){
-    rowsHtml = '';
-    for (const cat of Object.keys(CATALOG)){
-      const inCat = filtered.filter(r => r.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
-      if (inCat.length === 0) continue;
-      rowsHtml += '<div class="sum-cat-head" style="background:var(--'+CAT_CLASS[cat]+'-bg);color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
-      rowsHtml += inCat.map(r => sumRowHtml(r)).join('');
-    }
-  } else {
-    rowsHtml = filtered.sort((a,b)=>a.name.localeCompare(b.name)).map(r => sumRowHtml(r)).join('');
-  }
-
-  const checkedCount = filtered.filter(r => checkedOrder[r.id]).length;
-
-  // ---- On-hold section: carries over between orders, never cleared by "mark sent" ----
-  const heldAll = Object.keys(onHold).map(id => ({ id, ...itemsById[id], ...onHold[id] })).filter(r => r.name);
-  const heldFiltered = summaryFilter === 'All' ? heldAll : heldAll.filter(r => r.category === summaryFilter);
-  let holdHtml = '';
-  if (heldAll.length > 0){
-    let heldRows;
-    if (heldFiltered.length === 0){
-      heldRows = '<div class="sum-empty">Nothing on hold in this category.</div>';
-    } else if (summaryFilter === 'All'){
-      heldRows = '';
-      for (const cat of Object.keys(CATALOG)){
-        const inCat = heldFiltered.filter(r => r.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
-        if (inCat.length === 0) continue;
-        heldRows += '<div class="sum-cat-head" style="background:var(--'+CAT_CLASS[cat]+'-bg);color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
-        heldRows += inCat.map(r => holdRowHtml(r)).join('');
-      }
+  });
+  document.getElementById("lightbox-img").addEventListener("click", (e) => {
+    const img = e.currentTarget;
+    if (img.classList.contains("zoomed")) {
+      img.classList.remove("zoomed");
     } else {
-      heldRows = heldFiltered.sort((a,b)=>a.name.localeCompare(b.name)).map(r => holdRowHtml(r)).join('');
+      const rect = img.getBoundingClientRect();
+      const originX = ((e.clientX - rect.left) / rect.width) * 100;
+      const originY = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${originX}% ${originY}%`;
+      img.classList.add("zoomed");
     }
-    holdHtml =
-      '<div class="hold-section"><div class="hold-head"><i class="ti ti-player-pause"></i>On hold ('+heldAll.length+')</div>' +
-      '<div class="hold-note">These stay on the board after an order is sent, and can be moved back into the next order.</div>' +
-      heldRows + '</div>';
-  }
-
-  const html =
-    '<div class="sheet-head"><span class="sheet-title">Order summary</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
-    '<div class="jumpchips" id="sum-chips" style="padding-bottom:10px">' + chips + '</div>' +
-    '<div class="sum-total">'+checkedCount+' of '+filtered.length+' ticked off'+(summaryFilter!=='All' ? ' in '+summaryFilter : ' total')+'</div>' +
-    '<div id="sum-rows">' + rowsHtml + '</div>' +
-    holdHtml +
-    (isAdmin ? '<button class="send-btn" id="send-order-btn" '+(all.length===0?'disabled':'')+'><i class="ti ti-send" style="vertical-align:-2px;margin-right:5px"></i>Mark sent &amp; clear board</button>' : '');
-  openPreservingFullscreen(html);
-  document.querySelectorAll('#sum-chips .chip').forEach(chip => { chip.onclick = () => { summaryFilter = chip.dataset.filter; renderSummary(); }; });
-  document.querySelectorAll('.sum-check').forEach(chk => { chk.onclick = () => { toggleChecked(chk.dataset.id); renderSummary(); }; });
-  document.querySelectorAll('[data-hold]').forEach(b => { b.onclick = () => { moveToHold(b.dataset.hold); renderSummary(); }; });
-  document.querySelectorAll('[data-unhold]').forEach(b => { b.onclick = () => { moveToOrder(b.dataset.unhold); renderSummary(); }; });
-  bindFsToggle(renderSummary);
-  const sendBtn = document.getElementById('send-order-btn');
-  if (sendBtn) sendBtn.onclick = sendOrder;
-}
-function holdRowHtml(r){
-  return '<div class="sum-row held" style="border-left-color:var(--'+CAT_CLASS[r.category]+')">' +
-    (isAdmin ? '<button type="button" class="move-btn" data-unhold="'+r.id+'" title="Move back into the order"><i class="ti ti-arrow-back-up"></i></button>' : '') +
-    '<div class="sum-body"><span class="sum-name">'+escapeHtml(r.name)+'</span><span class="sum-cat">'+escapeHtml(r.category)+'</span>' +
-    (r.comment ? '<div class="sum-comment">"'+escapeHtml(r.comment)+'"</div>' : '') +
-    '<div class="sum-time">Requested '+fmtTime(r.requestedAt || r.updatedAt)+(r.heldAt ? ' · held '+fmtTime(r.heldAt) : '')+'</div></div>' +
-    '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div></div>';
-}
-function sumRowHtml(r){
-  const on = !!checkedOrder[r.id];
-  return '<div class="sum-row '+(on?'checked':'')+'" style="border-left-color:var(--'+CAT_CLASS[r.category]+')">' +
-    '<button type="button" class="sum-check '+(on?'on':'')+'" data-id="'+r.id+'">'+(on?'<i class="ti ti-check"></i>':'')+'</button>' +
-    '<div class="sum-body"><span class="sum-name">'+escapeHtml(r.name)+'</span><span class="sum-cat">'+escapeHtml(r.category)+'</span>' +
-    (r.comment ? '<div class="sum-comment">"'+escapeHtml(r.comment)+'"</div>' : '') +
-    '<div class="sum-time">Requested '+fmtTime(r.requestedAt || r.updatedAt)+'</div></div>' +
-    '<div class="sum-right">'+r.qty+' kg<span class="sum-by">'+escapeHtml(r.requestedBy)+'</span></div>' +
-    (isAdmin ? '<button type="button" class="move-btn" data-hold="'+r.id+'" title="Move to on-hold list"><i class="ti ti-player-pause"></i></button>' : '') +
-    '</div>';
-}
-
-// keep the same overlay/sheet element alive across a re-render so fullscreen state doesn't flicker
-function openPreservingFullscreen(html){
-  const existingSheet = document.getElementById('sheet');
-  if (existingSheet){
-    existingSheet.innerHTML = html;
-    existingSheet.classList.toggle('fullscreen', modalFullscreen);
-  } else {
-    document.getElementById('modal-root').innerHTML = '<div class="overlay" id="overlay"><div class="sheet'+(modalFullscreen?' fullscreen':'')+'" id="sheet">' + html + '</div></div>';
-    document.getElementById('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeModal(); });
-  }
-}
-
-// ---- History: list of stored orders; click one to open a dedicated colored, grouped, searchable view ----
-async function openHistory(){
-  histOpenIdx = null;
-  openModal('<div class="loading">Loading…</div>');
-  try{
-    const q = query(ordersColl, orderBy('clearedAt', 'desc'), limit(20));
-    const snap = await getDocs(q);
-    historyCache = [];
-    snap.forEach(d => historyCache.push(d.data()));
-    renderHistoryList();
-  } catch(e){ console.error(e); openPreservingFullscreen('<div class="sheet-head"><span class="sheet-title">Order history</span><button class="sheet-close" onclick="closeModal()">&times;</button></div><div class="hist-empty">Could not load history.</div>'); }
-}
-function renderHistoryList(){
-  const rows = historyCache.length === 0 ? '<div class="hist-empty">No past orders yet.</div>' : historyCache.map((h, idx) => {
-    const date = new Date(h.clearedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    return '<div class="hist-list-row" data-idx="'+idx+'"><div><div class="hist-date">'+date+'</div><div class="hist-meta">'+(h.items||[]).length+' items &middot; sent by '+escapeHtml(h.clearedBy)+'</div></div><i class="ti ti-chevron-right"></i></div>';
-  }).join('');
-  const html = '<div class="sheet-head"><span class="sheet-title">Order history</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' + rows;
-  openPreservingFullscreen(html);
-  bindFsToggle(renderHistoryList);
-  document.querySelectorAll('.hist-list-row').forEach(row => { row.onclick = () => { histOpenIdx = Number(row.dataset.idx); histDetailFilter = 'All'; histDetailTerm = ''; renderHistoryDetail(); }; });
-}
-function renderHistoryDetail(){
-  const h = historyCache[histOpenIdx];
-  const date = new Date(h.clearedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  const term = histDetailTerm.trim().toLowerCase();
-  let items = h.items || [];
-  if (histDetailFilter !== 'All') items = items.filter(it => it.category === histDetailFilter);
-  if (term) items = items.filter(it => it.name.toLowerCase().includes(term));
-
-  const chips = ['All', ...Object.keys(CATALOG)].map(c =>
-    '<button type="button" class="chip '+(c!=='All'?CAT_CLASS[c]:'')+' '+(histDetailFilter===c?'active':'')+'" data-hfilter="'+escapeHtml(c)+'">'+c+'</button>'
-  ).join('');
-
-  let rowsHtml;
-  if (items.length === 0){
-    rowsHtml = '<div class="hist-empty">No matching items.</div>';
-  } else if (histDetailFilter === 'All'){
-    rowsHtml = '';
-    for (const cat of Object.keys(CATALOG)){
-      const inCat = items.filter(it => it.category === cat).sort((a,b)=>a.name.localeCompare(b.name));
-      if (inCat.length === 0) continue;
-      rowsHtml += '<div class="sum-cat-head" style="background:var(--'+CAT_CLASS[cat]+'-bg);color:var(--'+CAT_CLASS[cat]+')">'+cat+' ('+inCat.length+')</div>';
-      rowsHtml += inCat.map(histRowHtml).join('');
-    }
-  } else {
-    rowsHtml = items.sort((a,b)=>a.name.localeCompare(b.name)).map(histRowHtml).join('');
-  }
-
-  const html =
-    '<div class="sheet-head"><button class="sheet-back" id="hist-back" type="button"><i class="ti ti-arrow-left"></i></button><span class="sheet-title">'+date+'</span>' + fsToggleHtml() + '<button class="sheet-close" onclick="closeModal()">&times;</button></div>' +
-    '<div class="hist-meta" style="margin-bottom:10px">Sent by '+escapeHtml(h.clearedBy)+' &middot; '+(h.items||[]).length+' items total</div>' +
-    '<div class="search-wrap" style="margin-bottom:10px"><i class="ti ti-search"></i><input type="text" id="hist-detail-search" placeholder="Search items in this order" value="'+escapeHtml(histDetailTerm)+'"/></div>' +
-    '<div class="jumpchips" id="hist-detail-chips" style="padding-bottom:10px">' + chips + '</div>' +
-    '<div id="hist-detail-rows">' + rowsHtml + heldSnapshotHtml(h) + '</div>';
-  openPreservingFullscreen(html);
-  bindFsToggle(renderHistoryDetail);
-  document.getElementById('hist-back').onclick = () => { histOpenIdx = null; renderHistoryList(); };
-  document.querySelectorAll('#hist-detail-chips .chip').forEach(chip => { chip.onclick = () => { histDetailFilter = chip.dataset.hfilter; renderHistoryDetail(); }; });
-  const s = document.getElementById('hist-detail-search');
-  if (s){ s.oninput = (e) => { histDetailTerm = e.target.value; renderHistoryDetail(); }; s.focus(); s.selectionStart = s.selectionEnd = s.value.length; }
-}
-function heldSnapshotHtml(h){
-  const held = h.onHoldAtSend || [];
-  if (held.length === 0) return '';
-  const rows = held.slice().sort((a,b)=> (a.category+a.name).localeCompare(b.category+b.name)).map(histRowHtml).join('');
-  return '<div class="hold-section"><div class="hold-head"><i class="ti ti-player-pause"></i>Was on hold at this time ('+held.length+')</div>' +
-    '<div class="hold-note">Not part of this order — recorded for reference.</div>' + rows + '</div>';
-}
-
-function histRowHtml(it){
-  return '<div class="sum-row" style="border-left-color:var(--'+CAT_CLASS[it.category]+')">' +
-    '<div class="sum-body"><span class="sum-name">'+escapeHtml(it.name)+'</span><span class="sum-cat">'+escapeHtml(it.category)+'</span>' +
-    (it.comment ? '<div class="sum-comment">"'+escapeHtml(it.comment)+'"</div>' : '') +
-    (it.requestedAt ? '<div class="sum-time">Requested '+fmtTime(it.requestedAt)+'</div>' : '') + '</div>' +
-    '<div class="sum-right">'+it.qty+' kg<span class="sum-by">'+escapeHtml(it.requestedBy)+'</span></div></div>';
-}
-
-document.getElementById('search').addEventListener('input', (e) => { searchTerm = e.target.value; render(); });
-document.getElementById('display-name').addEventListener('change', (e) => saveName(e.target.value));
-document.getElementById('admin-btn').addEventListener('click', handleAdminClick);
-document.getElementById('history-btn').addEventListener('click', openHistory);
-document.getElementById('summary-btn').addEventListener('click', () => { summaryFilter = 'All'; renderSummary(); });
-
-// ---- Access gate: a team-wide code required before anyone can view/use the board ----
-function checkGate(){
-  if (localStorage.getItem('kb-user-authed') === 'true'){
-    document.getElementById('board-root').style.display = '';
-  } else {
-    document.getElementById('access-gate').style.display = 'flex';
-    document.getElementById('gate-pin').focus();
-  }
-}
-function submitGate(){
-  const val = document.getElementById('gate-pin').value;
-  if (val === USER_PIN){
-    localStorage.setItem('kb-user-authed', 'true');
-    document.getElementById('access-gate').style.display = 'none';
-    document.getElementById('board-root').style.display = '';
-  } else {
-    document.getElementById('gate-error').style.display = 'block';
-    document.getElementById('gate-pin').value = '';
-    document.getElementById('gate-pin').focus();
-  }
-}
-document.getElementById('gate-submit').addEventListener('click', submitGate);
-document.getElementById('gate-pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGate(); });
-checkGate();
+  });
+  document.getElementById("costing-backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "costing-backdrop") closeCosting();
+  });
 </script>
 </body>
 </html>
