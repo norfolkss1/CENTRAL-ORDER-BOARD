@@ -12,7 +12,7 @@
   // on mobile browsers) and doesn't match the version this deploy expects, force
   // one genuine network reload with a cache-busting URL. Runs before anything else.
   (function () {
-    var CURRENT_VERSION = "3";
+    var CURRENT_VERSION = "4";
     var stored = localStorage.getItem("me-recipe-app-version");
     if (stored !== CURRENT_VERSION) {
       localStorage.setItem("me-recipe-app-version", CURRENT_VERSION);
@@ -129,7 +129,7 @@
 <script src="firebase-config.js?v=3"></script>
 <script src="data/seed-data.js?v=3"></script>
 <script src="data/costing-data.js?v=3"></script>
-<script src="app.v3.js"></script>
+<script src="app.v4.js"></script>
 <script>
   document.getElementById("drawer-close-btn").addEventListener("click", () => {
     document.getElementById("drawer-backdrop").classList.add("hidden");
