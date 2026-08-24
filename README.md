@@ -72,7 +72,7 @@ common causes:
 |---|---|---|
 | Red banner: "Couldn't reach the recipe database" | Firestore Database not created yet | Do Step 1 above |
 | Red banner mentions "permission" or "insufficient" | Firestore rules are blocking access | Do Step 2 above |
-| No banner, but the page is just blank/white | `firebase-config.js` wasn't loaded (check browser console, F12) | Make sure you kept the folder structure intact — `index.html` must sit next to `app.js`, `style.css`, `firebase-config.js`, and the `data/` and `images/` folders |
+| No banner, but the page is just blank/white | `firebase-config.js` wasn't loaded (check browser console, F12) | Make sure you kept the folder structure intact — `index.html` must sit next to `app.v2.js`, `style.v2.css`, `firebase-config.js`, and the `data/` and `images/` folders |
 
 You can also open your browser's developer console (F12 → Console tab) — any
 Firestore error will be printed there with more detail than the on-page banner.
@@ -83,8 +83,8 @@ Firestore error will be printed there with more detail than the on-page banner.
 
 ```
 index.html              the app shell
-style.css                all styling (light theme, mobile + print styles)
-app.js                   all app logic (Firestore reads/writes, rendering, workflow)
+style.v2.css              all styling (light theme, mobile + print styles)
+app.v2.js                all app logic (Firestore reads/writes, rendering, workflow)
 firebase-config.js        your Firebase project config (already filled in)
 data/seed-data.js        starting recipe content (only used the very first time)
 data/costing-data.js     real ingredient-cost data imported from costing.xlsx
@@ -146,6 +146,13 @@ images/                  dish photos extracted from the PPTX
 
 ## Recent additions (this update)
 
+- **Renamed the core files** (`app.js` → `app.v2.js`, `style.css` → `style.v2.css`)
+  purely to force GitHub/your browser to treat them as brand-new files instead of
+  possibly serving a cached copy of the old ones — this was likely why earlier
+  updates didn't visibly show up after deploying. **After uploading this version,
+  delete the old `app.js` and `style.css` files from your repo** (they're no longer
+  used — GitHub's uploader doesn't delete old files automatically, it only adds/
+  replaces what you drag in). Next update will bump to `.v3`, and so on.
 - **Photo and video per method step.** Each step in a recipe can now have its own
   photo (uploaded from your device, auto-compressed) and/or video (paste a YouTube,
   Vimeo, or direct video link — embedded and playable right in the step). Works the
